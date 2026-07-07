@@ -1,0 +1,8 @@
+build/
+*.exe
+*.dll
+engine_log.txt
+connect.txt
+server.txt
+.idea/
+cmake-build-*/
