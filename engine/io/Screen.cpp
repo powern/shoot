@@ -67,7 +67,9 @@ void Screen::display() {
         newY = 1;
     }
     if (newX != pos.x || newY != pos.y) {
+        _window->setMouseCursorGrabbed(false);
         sf::Mouse::setPosition(sf::Vector2i(newX, newY), *_window);
+        _window->setMouseCursorGrabbed(true);
     }
 
     _lastMousePos = {newX, newY};
