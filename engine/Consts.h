@@ -16,7 +16,7 @@ namespace Consts {
     const sf::Color BACKGROUND_COLOR = sf::Color(255, 255, 255);
     const std::string PROJECT_NAME = "engine";
     const bool USE_LOG_FILE = true;
-    const bool USE_OPEN_GL = false;
+    const bool USE_OPEN_GL = true;
     const bool SHOW_DEBUG_INFO = false;
     const bool SHOW_FPS_COUNTER = true;
 
