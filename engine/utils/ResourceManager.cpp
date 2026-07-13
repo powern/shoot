@@ -177,7 +177,13 @@ std::vector<std::shared_ptr<Mesh>> ResourceManager::loadObjects(const std::strin
         lineNum++;
         std::stringstream s(line);
         char first = 0;
-        s >> first;
+        // Get first non-whitespace character from line (not from stream, to preserve stream for parsing)
+        for (char c : line) {
+            if (c != ' ' && c != '\t' && c != '\r') {
+                first = c;
+                break;
+            }
+        }
 
         if (first == '#' || first == 0) {
             continue;
@@ -234,18 +240,12 @@ std::vector<std::shared_ptr<Mesh>> ResourceManager::loadObjects(const std::strin
                 while (!currentMtlName.empty() && (currentMtlName.back() == '\r')) {
                     currentMtlName.pop_back();
                 }
-                Log::log("  usemtl lookup: '" + currentMtlName + "' (len=" + std::to_string(currentMtlName.size()) + ")");
-                // Find material index
                 currentMtlIndex = -1;
                 for (size_t mi = 0; mi < materials.size(); mi++) {
                     if (materials[mi].name == currentMtlName) {
                         currentMtlIndex = static_cast<int>(mi);
-                        Log::log("    matched -> idx=" + std::to_string(mi));
                         break;
                     }
-                }
-                if (currentMtlIndex < 0) {
-                    Log::log("    no match for '" + currentMtlName + "'");
                 }
             }
             continue;
