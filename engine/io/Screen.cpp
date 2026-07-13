@@ -48,19 +48,21 @@ void Screen::display() {
     sf::Vector2i pos = sf::Mouse::getPosition(*_window);
     int w = width();
     int h = height();
+    int newX = pos.x;
+    int newY = pos.y;
     if (pos.x <= 0) {
-        sf::Mouse::setPosition(sf::Vector2i(w - 2, pos.y), *_window);
-        _lastMousePos.x = w - 2;
+        newX = w - 2;
     } else if (pos.x >= w - 1) {
-        sf::Mouse::setPosition(sf::Vector2i(1, pos.y), *_window);
-        _lastMousePos.x = 1;
+        newX = 1;
     }
     if (pos.y <= 0) {
-        sf::Mouse::setPosition(sf::Vector2i(pos.x, h - 2), *_window);
-        _lastMousePos.y = h - 2;
+        newY = h - 2;
     } else if (pos.y >= h - 1) {
-        sf::Mouse::setPosition(sf::Vector2i(pos.x, 1), *_window);
-        _lastMousePos.y = 1;
+        newY = 1;
+    }
+    if (newX != pos.x || newY != pos.y) {
+        sf::Mouse::setPosition(sf::Vector2i(newX, newY), *_window);
+        _lastMousePos = {newX, newY};
     }
 
     std::string title = _title + " (" + std::to_string(Time::fps()) + " fps)";
