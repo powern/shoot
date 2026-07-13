@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 02.06.2021.
-//
-
 #ifndef ENGINE_ACOLOR_H
 #define ENGINE_ACOLOR_H
 

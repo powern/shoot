@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 14.03.2021.
-//
-
 #ifndef SHOOTER_PLAYER_H
 #define SHOOTER_PLAYER_H
 

@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 06.06.2021.
-//
-
 #ifndef SHOOTER_RIFLE_H
 #define SHOOTER_RIFLE_H
 

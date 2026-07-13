@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 09.11.2021.
-//
-
 #ifndef SHOOTER_ANIMATIONS_H
 #define SHOOTER_ANIMATIONS_H
 

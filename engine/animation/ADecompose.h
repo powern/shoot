@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 23.02.2022.
-//
-
 #ifndef INC_3DZAVR_ADECOMPOSE_H
 #define INC_3DZAVR_ADECOMPOSE_H
 

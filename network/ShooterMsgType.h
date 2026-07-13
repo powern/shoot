@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 27.10.2021.
-//
-
 #ifndef SHOOTER_SHOOTERMSGTYPE_H
 #define SHOOTER_SHOOTERMSGTYPE_H
 

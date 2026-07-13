@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 14.01.2021.
-//
-
 #ifndef ENGINE_CAMERA_H
 #define ENGINE_CAMERA_H
 

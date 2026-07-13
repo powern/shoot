@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 19.09.2021.
-//
-
 #include "PlayerController.h"
 #include "../engine/utils/Log.h"
 #include "../engine/animation/Animations.h"

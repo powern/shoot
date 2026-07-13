@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 03.11.2021.
-//
-
 #include "Timer.h"
 
 using namespace std::chrono;

@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 15.03.2021.
-//
-
 #ifndef ENGINE_OBJECT_H
 #define ENGINE_OBJECT_H
 

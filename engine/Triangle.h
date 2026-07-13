@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 13.01.2021.
-//
-
 #ifndef ENGINE_TRIANGLE_H
 #define ENGINE_TRIANGLE_H
 

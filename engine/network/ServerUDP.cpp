@@ -1,7 +1,3 @@
-//
-// Created by Neirokan on 30.04.2020
-//
-
 #include "ServerUDP.h"
 #include "MsgType.h"
 #include "../utils/Log.h"

@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 27.01.2021.
-//
-
 #include "Animation.h"
 #include "../Consts.h"
 #include "../utils/Time.h"

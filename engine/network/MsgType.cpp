@@ -1,7 +1,3 @@
-//
-// Created by Neirokan on 30.04.2020
-//
-
 #include "MsgType.h"
 
 sf::Packet &operator<<(sf::Packet &packet, MsgType type) {

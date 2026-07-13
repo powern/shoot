@@ -1,7 +1,3 @@
-//
-// Created by Neirokan on 09.05.2020
-//
-
 #ifndef ENGINE_RESOURCEMANAGER_H
 #define ENGINE_RESOURCEMANAGER_H
 

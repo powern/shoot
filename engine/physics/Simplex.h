@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 08.03.2021.
-//
-
 #ifndef ENGINE_SIMPLEX_H
 #define ENGINE_SIMPLEX_H
 

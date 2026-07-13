@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 07.10.2021.
-//
-
 #ifndef SHOOTER_CONSTS_H
 #define SHOOTER_CONSTS_H
 

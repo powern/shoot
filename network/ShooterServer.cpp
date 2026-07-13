@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 25.05.2021.
-//
-
 #include "ShooterServer.h"
 #include "../engine/utils/Log.h"
 #include "ShooterMsgType.h"

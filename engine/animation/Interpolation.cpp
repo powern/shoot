@@ -1,6 +1,3 @@
-//
-// Created by Иван Ильин on 09.11.2021.
-//
 #include <cmath>
 
 #include "Interpolation.h"

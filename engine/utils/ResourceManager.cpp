@@ -1,7 +1,3 @@
-//
-// Created by Neirokan on 09.05.2020
-//
-
 #include <map>
 #include <memory>
 #include <sstream>

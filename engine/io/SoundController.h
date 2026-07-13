@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 17.10.2021.
-//
-
 #ifndef SHOOTER_SOUNDCONTROLLER_H
 #define SHOOTER_SOUNDCONTROLLER_H
 
