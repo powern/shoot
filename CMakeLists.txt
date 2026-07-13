@@ -126,12 +126,18 @@ endif()
 
 target_link_libraries(${CMAKE_PROJECT_NAME} sfml-audio sfml-network sfml-graphics sfml-window sfml-system)
 
-# post-build: copy SFML and OpenAL DLLs to output dir
+# post-build: copy SFML and MinGW runtime DLLs to output dir
 if(WIN32)
     add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             "C:/Libraries/SFML/bin"
             "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "C:/Libraries/mingw-msvcrt-13.1.0/mingw64/bin/libstdc++-6.dll"
+            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libstdc++-6.dll"
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "C:/Libraries/mingw-msvcrt-13.1.0/mingw64/bin/libgcc_s_seh-1.dll"
+            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libgcc_s_seh-1.dll"
     )
 endif()
 
