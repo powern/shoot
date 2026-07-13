@@ -23,9 +23,12 @@ Mesh &Mesh::operator*=(const Matrix4x4 &matrix4X4) {
 
 void Mesh::computeBoundingRadius() {
     _boundingRadius = 0;
+    Vec4D center4(position().x(), position().y(), position().z(), 1.0);
+    Matrix4x4 M = model();
     for (auto &t : _tris) {
         for (int i = 0; i < 3; i++) {
-            double d = Vec3D(t[i]).sqrAbs();
+            Vec4D diff = M * t[i] - center4;
+            double d = diff.x()*diff.x() + diff.y()*diff.y() + diff.z()*diff.z();
             if (d > _boundingRadius) {
                 _boundingRadius = d;
             }

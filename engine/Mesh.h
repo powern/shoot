@@ -29,6 +29,11 @@ private:
 public:
     explicit Mesh(ObjectNameTag nameTag) : Object(std::move(nameTag)) {};
 
+    void scale(const Vec3D &s) {
+        Object::scale(s);
+        computeBoundingRadius();
+    }
+
     Mesh &operator=(const Mesh &mesh) = delete;
 
     Mesh(const Mesh &mesh) = default;
