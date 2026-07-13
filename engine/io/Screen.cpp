@@ -35,33 +35,13 @@ void Screen::display() {
         if (event.type == sf::Event::Closed) {
             _window->close();
         }
-        if (event.type == sf::Event::MouseMoved) {
-            if (_lastMousePos.x >= 0) {
-                _mouseDelta += sf::Vector2i(event.mouseMove.x - _lastMousePos.x,
-                                            event.mouseMove.y - _lastMousePos.y);
-            }
-            _lastMousePos = {event.mouseMove.x, event.mouseMove.y};
-        }
     }
 
-    // Edge-to-edge wrap: if cursor stuck at edge, teleport to opposite edge
+    // Center the mouse and compute delta from center (standard FPS approach)
+    sf::Vector2i center(width() / 2, height() / 2);
     sf::Vector2i pos = sf::Mouse::getPosition(*_window);
-    int w = width();
-    int h = height();
-    if (pos.x <= 0) {
-        sf::Mouse::setPosition(sf::Vector2i(w - 2, pos.y), *_window);
-        _lastMousePos.x = w - 2;
-    } else if (pos.x >= w - 1) {
-        sf::Mouse::setPosition(sf::Vector2i(1, pos.y), *_window);
-        _lastMousePos.x = 1;
-    }
-    if (pos.y <= 0) {
-        sf::Mouse::setPosition(sf::Vector2i(pos.x, h - 2), *_window);
-        _lastMousePos.y = h - 2;
-    } else if (pos.y >= h - 1) {
-        sf::Mouse::setPosition(sf::Vector2i(pos.x, 1), *_window);
-        _lastMousePos.y = 1;
-    }
+    _mouseDelta = pos - center;
+    sf::Mouse::setPosition(center, *_window);
 
     std::string title = _title + " (" + std::to_string(Time::fps()) + " fps)";
     _window->setTitle(title);
