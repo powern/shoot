@@ -73,6 +73,20 @@ void Shooter::start() {
     world->loadMap(ShooterConsts::DOOM_MAP_OBJ, Vec3D{0.03, 0.03, 0.03},
                    Matrix4x4::RotationX(-Consts::PI/2.0));
 
+    Log::log("=== GEOMETRY DEBUG ===");
+    for (auto &it : *world) {
+        auto &tris = it.second->triangles();
+        Log::log("body '" + it.first.str() + "' " + std::to_string(tris.size()) + " tris, " +
+                 std::to_string(it.second->materials().size()) + " mats, hasTex=" +
+                 std::to_string(it.second->hasTextures()));
+        for (size_t i = 0; i < std::min(size_t(3), tris.size()); i++) {
+            Log::log("  tri[" + std::to_string(i) + "]: mat=" + std::to_string(tris[i].materialIndex()) +
+                     " p0=(" + std::to_string(tris[i][0].x()) + "," + std::to_string(tris[i][0].y()) + "," + std::to_string(tris[i][0].z()) + ")" +
+                     " p1=(" + std::to_string(tris[i][1].x()) + "," + std::to_string(tris[i][1].y()) + "," + std::to_string(tris[i][1].z()) + ")" +
+                     " p2=(" + std::to_string(tris[i][2].x()) + "," + std::to_string(tris[i][2].y()) + "," + std::to_string(tris[i][2].z()) + ")");
+        }
+    }
+
     // TODO: encapsulate call backs inside Player
     player->setAddTraceCallBack([this](const Vec3D &from, const Vec3D &to) {
         client->addTrace(from, to);
