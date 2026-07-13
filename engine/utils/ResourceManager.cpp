@@ -191,6 +191,7 @@ std::vector<std::shared_ptr<Mesh>> ResourceManager::loadObjects(const std::strin
 
         if (first == 'm' && line.size() > 1 && line[1] == ' ') {
             // Custom format: m ID R G B A
+            std::string skip; s >> skip; // consume 'm'
             std::string matName;
             int color[4];
             s >> matName >> color[0] >> color[1] >> color[2] >> color[3];
@@ -213,6 +214,7 @@ std::vector<std::shared_ptr<Mesh>> ResourceManager::loadObjects(const std::strin
         }
 
         if (first == 'v') {
+            std::string skip; s >> skip; // consume 'v', 'vt', or 'vn'
             if (line.size() > 1 && line[1] == 't') {
                 // Texture coordinate: vt u v
                 double u, v;
@@ -253,6 +255,7 @@ std::vector<std::shared_ptr<Mesh>> ResourceManager::loadObjects(const std::strin
 
         if (first == 'f') {
             // Face: f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3
+            std::string skip; s >> skip; // consume 'f'
             std::vector<int> vIdx, vtIdx, vnIdx;
             std::string part;
 
@@ -328,6 +331,7 @@ std::vector<std::shared_ptr<Mesh>> ResourceManager::loadObjects(const std::strin
 
         if (first == 'g') {
             // Group - handle old format material assignment
+            std::string skip; s >> skip; // consume 'g'
             std::string matInfo;
             s >> matInfo;
             if (matInfo.size() >= 3) {
