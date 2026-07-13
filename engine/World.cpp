@@ -92,12 +92,13 @@ IntersectionInformation World::rayCast(const Vec3D &from, const Vec3D &to, const
     return IntersectionInformation{point, sqrt(minDistance), triangle, ObjectNameTag(bodyName), intersectedBody, intersected};
 }
 
-void World::loadMap(const std::string &filename, const Vec3D &scale) {
+void World::loadMap(const std::string &filename, const Vec3D &scale, const Matrix4x4 &postTransform) {
     auto objs = ResourceManager::loadObjects(filename);
     for (auto &i : objs) {
         std::shared_ptr<RigidBody> obj = std::make_shared<RigidBody>(*i, false);
         addBody(obj);
         obj->scale(scale);
+        obj->transform(postTransform);
         obj->setStatic(true);
     }
 }

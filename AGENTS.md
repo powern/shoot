@@ -1,5 +1,7 @@
 # Shooter Project — Full Reference
 
+> **Progress tracking:** [PLAN.md](./PLAN.md) — поточний статус інтеграції Doom MAP01
+
 ## Overview
 3D multiplayer first-person shooter built entirely on a **self-written 3D engine** ("3Dzavr").  
 Author: Иван Ильин (Ivan Ilin).  
