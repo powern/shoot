@@ -80,16 +80,6 @@ void Engine::create(int screenWidth, int screenHeight, const std::string &name, 
                     }
                 }
 
-                // Pass 1b: textured meshes as non-textured (debug)
-                for (auto &it : *world) {
-                    if (it.second->isVisible() && it.second->hasTextures()) {
-                        GLfloat *model = it.second->glModel();
-                        GLfloat *geometry = it.second->glFloatArray();
-                        screen->glDrawMesh(geometry, view, model, 3 * it.second->triangles().size());
-                        delete[] model;
-                    }
-                }
-
                 // Pass 2: textured meshes
                 screen->prepareToGlDrawTexturedMesh();
                 for (auto &it : *world) {

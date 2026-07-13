@@ -70,8 +70,7 @@ void Shooter::start() {
 
     screen->setMouseCursorVisible(true);
 
-    world->loadMap(ShooterConsts::DOOM_MAP_OBJ, Vec3D{0.03, 0.03, 0.03},
-                   Matrix4x4::RotationX(-Consts::PI/2.0));
+    world->loadMap(ShooterConsts::MAP_OBJ, Vec3D{5, 5, 5});
 
     // TODO: encapsulate call backs inside Player
     player->setAddTraceCallBack([this](const Vec3D &from, const Vec3D &to) {
