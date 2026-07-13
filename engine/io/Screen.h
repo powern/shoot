@@ -28,6 +28,7 @@ private:
     sf::Color _background;
     sf::Vector2i _mouseDelta{0, 0};
     sf::Vector2i _lastMousePos{-1, -1};
+    bool _centerCursor = false;
 
     const std::shared_ptr<sf::RenderWindow> _window = std::make_shared<sf::RenderWindow>();
 
@@ -67,6 +68,7 @@ public:
     void close();
 
     void setMouseCursorVisible(bool visible);
+    void setCursorCentered(bool centered) { _centerCursor = centered; }
 
     // OpenGL functions
     void prepareToGlDrawMesh();

@@ -38,10 +38,12 @@ void Screen::display() {
     }
 
     // Center the mouse and compute delta from center (standard FPS approach)
-    sf::Vector2i center(width() / 2, height() / 2);
-    sf::Vector2i pos = sf::Mouse::getPosition(*_window);
-    _mouseDelta = pos - center;
-    sf::Mouse::setPosition(center, *_window);
+    if (_centerCursor) {
+        sf::Vector2i center(width() / 2, height() / 2);
+        sf::Vector2i pos = sf::Mouse::getPosition(*_window);
+        _mouseDelta = pos - center;
+        sf::Mouse::setPosition(center, *_window);
+    }
 
     std::string title = _title + " (" + std::to_string(Time::fps()) + " fps)";
     _window->setTitle(title);

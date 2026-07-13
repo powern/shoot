@@ -148,6 +148,7 @@ void Shooter::update() {
     if (keyboard->isKeyTapped(sf::Keyboard::Escape)) {
         inGame = !inGame;
         screen->setMouseCursorVisible(!inGame);
+        screen->setCursorCentered(inGame);
         screen->renderWindow()->setMouseCursorGrabbed(inGame);
     }
 
@@ -365,6 +366,7 @@ void Shooter::drawPlayerStats() {
 void Shooter::play() {
     inGame = true;
     screen->setMouseCursorVisible(false);
+    screen->setCursorCentered(true);
     screen->renderWindow()->setMouseCursorGrabbed(true);
     sf::Vector2i _ignore = screen->getAndResetMouseDelta(); (void)_ignore;
 }
