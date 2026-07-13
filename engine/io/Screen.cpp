@@ -40,7 +40,15 @@ void Screen::display() {
     // Compute mouse delta from cursor position difference
     sf::Vector2i pos = sf::Mouse::getPosition(*_window);
     if (_lastMousePos.x >= 0) {
-        _mouseDelta += pos - _lastMousePos;
+        sf::Vector2i delta = pos - _lastMousePos;
+        if (std::abs(delta.x) > 500 || std::abs(delta.y) > 500) {
+            Log::log("SCREEN SPIKE dx=" + std::to_string(delta.x) +
+                     " dy=" + std::to_string(delta.y) +
+                     " pos=(" + std::to_string(pos.x) + "," + std::to_string(pos.y) + ")" +
+                     " last=(" + std::to_string(_lastMousePos.x) + "," + std::to_string(_lastMousePos.y) + ")" +
+                     " fps=" + std::to_string(Time::fps()));
+        }
+        _mouseDelta += delta;
     }
 
     // Edge-to-edge wrap: teleport to opposite edge when cursor hits edge
