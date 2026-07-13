@@ -63,7 +63,7 @@ public:
     void translate(const Vec3D &dv);
     void translateToPoint(const Vec3D &point);
     void attractToPoint(const Vec3D &point, double value);
-    void scale(const Vec3D &s);
+    virtual void scale(const Vec3D &s);
     void rotate(const Vec3D &r);
     void rotate(const Vec3D &v, double rv);
     void rotateToAngle(const Vec3D &v);
