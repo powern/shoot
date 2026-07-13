@@ -192,13 +192,6 @@ void PlayerController::update() {
     // Mouse movement
     Vec2D displacement = _mouse->getMouseDisplacement();
 
-    if (std::abs(displacement.x()) > 500 || std::abs(displacement.y()) > 500) {
-        Log::log("MOUSE SPIKE dx=" + std::to_string(displacement.x()) +
-                 " dy=" + std::to_string(displacement.y()) +
-                 " fps=" + std::to_string(Time::fps()) +
-                 " dt=" + std::to_string(Time::deltaTime()));
-    }
-
     _player->rotate(Vec3D{0, -displacement.x() * ShooterConsts::MOUSE_SENSITIVITY, 0});
     _player->setVelocity(Matrix4x4::RotationY(displacement.x() * ShooterConsts::MOUSE_SENSITIVITY) * _player->velocity());
 
