@@ -74,7 +74,7 @@ void Engine::create(int screenWidth, int screenHeight, const std::string &name, 
                 screen->popGLStates();
                 screen->prepareToGlDrawMesh();
                 for (auto &it : *world) {
-                    if (it.second->isVisible()) {
+                    if (it.second->isVisible() && camera->isInFrustum(it.second->position(), it.second->boundingRadius())) {
                         GLfloat *model = it.second->glModel();
                         GLfloat *geometry = it.second->glFloatArray();
                         screen->glDrawMesh(geometry, view, model, 3 * it.second->triangles().size());
@@ -88,7 +88,9 @@ void Engine::create(int screenWidth, int screenHeight, const std::string &name, 
                 camera->clear();
                 // project triangles to the camera plane
                 for (auto &it : *world) {
-                    camera->project(it.second);
+                    if (it.second->isVisible() && camera->isInFrustum(it.second->position(), it.second->boundingRadius())) {
+                        camera->project(it.second);
+                    }
                 }
                 // draw triangles on the screen
                 for (auto &t : camera->sorted()) {
