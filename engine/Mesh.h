@@ -18,6 +18,9 @@ private:
     std::vector<Triangle> _tris;
     sf::Color _color = sf::Color(255, 245, 194);
     bool _visible = true;
+    double _boundingRadius = 0;
+
+    void computeBoundingRadius();
 
     Mesh &operator*=(const Matrix4x4 &matrix4X4);
 
@@ -25,6 +28,11 @@ private:
     mutable GLfloat* _geometry = nullptr;
 public:
     explicit Mesh(ObjectNameTag nameTag) : Object(std::move(nameTag)) {};
+
+    void scale(const Vec3D &s) {
+        Object::scale(s);
+        computeBoundingRadius();
+    }
 
     Mesh &operator=(const Mesh &mesh) = delete;
 
@@ -41,6 +49,8 @@ public:
     void setTriangles(std::vector<Triangle>&& t);
 
     [[nodiscard]] size_t size() const { return _tris.size() * 3; }
+
+    [[nodiscard]] double boundingRadius() const { return _boundingRadius; }
 
     [[nodiscard]] sf::Color color() const { return _color; }
 
