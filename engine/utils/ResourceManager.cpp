@@ -230,6 +230,9 @@ std::vector<std::shared_ptr<Mesh>> ResourceManager::loadObjects(const std::strin
                 double x, y, z;
                 s >> x >> y >> z;
                 verts.emplace_back(x, y, z, 1.0);
+                if (verts.size() == 1) {
+                    Log::log("  FIRST VERTEX: v " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(z));
+                }
             }
             continue;
         }
