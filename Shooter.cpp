@@ -74,6 +74,23 @@ void Shooter::start() {
     world->loadMap(ShooterConsts::DOOM_MAP_OBJ, Vec3D{0.03, 0.03, 0.03},
                    Matrix4x4::RotationX(-Consts::PI/2.0));
 
+    Log::log("=== MAP LOAD DEBUG ===");
+    int bodyCount = 0, triCount = 0, texCount = 0;
+    for (auto &it : *world) {
+        bodyCount++;
+        triCount += it.second->triangles().size();
+        if (it.second->hasTextures()) {
+            texCount++;
+            for (auto &m : it.second->materials()) {
+                if (m.hasTexture) {
+                    Log::log("  mat '" + m.name + "' tex=" + (m.texture ? "OK" : "NULL"));
+                    break;
+                }
+            }
+        }
+    }
+    Log::log("bodies=" + std::to_string(bodyCount) + " tris=" + std::to_string(triCount) + " textured=" + std::to_string(texCount));
+
     // TODO: encapsulate call backs inside Player
     player->setAddTraceCallBack([this](const Vec3D &from, const Vec3D &to) {
         client->addTrace(from, to);
