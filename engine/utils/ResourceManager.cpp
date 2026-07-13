@@ -204,23 +204,21 @@ std::vector<std::shared_ptr<Mesh>> ResourceManager::loadObjects(const std::strin
         }
 
         if (first == 'v') {
-            char peek;
-            s >> peek;
-            if (peek == ' ' || s.eof()) {
-                // Vertex position: v x y z
-                double x, y, z;
-                s >> x >> y >> z;
-                verts.emplace_back(x, y, z, 1.0);
-            } else if (peek == 't') {
+            if (line.size() > 1 && line[1] == 't') {
                 // Texture coordinate: vt u v
                 double u, v;
                 s >> u >> v;
                 uvs.emplace_back(u, v);
-            } else if (peek == 'n') {
+            } else if (line.size() > 1 && line[1] == 'n') {
                 // Normal: vn x y z
                 double x, y, z;
                 s >> x >> y >> z;
                 norms.emplace_back(x, y, z);
+            } else {
+                // Vertex position: v x y z
+                double x, y, z;
+                s >> x >> y >> z;
+                verts.emplace_back(x, y, z, 1.0);
             }
             continue;
         }
