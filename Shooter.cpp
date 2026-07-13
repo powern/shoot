@@ -79,6 +79,14 @@ void Shooter::start() {
         Log::log("body '" + it.first.str() + "' " + std::to_string(tris.size()) + " tris, " +
                  std::to_string(it.second->materials().size()) + " mats, hasTex=" +
                  std::to_string(it.second->hasTextures()));
+        auto &mats = it.second->materials();
+        if (!mats.empty()) {
+            Log::log("  first mat: '" + mats[0].name + "' tex=" + (mats[0].texture ? "OK" : "NULL"));
+        }
+        if (tris.size() > 0) {
+            Log::log("  first tri matIdx=" + std::to_string(tris[0].materialIndex()));
+        }
+        Log::log("  === TRIANGLE SAMPLE (first 3) ===");
         for (size_t i = 0; i < std::min(size_t(3), tris.size()); i++) {
             Log::log("  tri[" + std::to_string(i) + "]: mat=" + std::to_string(tris[i].materialIndex()) +
                      " p0=(" + std::to_string(tris[i][0].x()) + "," + std::to_string(tris[i][0].y()) + "," + std::to_string(tris[i][0].z()) + ")" +
