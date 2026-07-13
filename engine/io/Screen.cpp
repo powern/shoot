@@ -210,7 +210,7 @@ void Screen::prepareToGlDrawMesh() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     GLfloat ratio = static_cast<float>(_window->getSize().x) / _window->getSize().y;
-    glFrustum(-ratio, ratio, -1.f, 1.f, 1.0f, 500.f);
+    glFrustum(-ratio, ratio, -1.f, 1.f, 0.01f, 5000.f);
 
     // Enable position and texture coordinates vertex components
     glEnableClientState(GL_VERTEX_ARRAY);
@@ -256,7 +256,7 @@ void Screen::prepareToGlDrawTexturedMesh() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     GLfloat ratio = static_cast<float>(_window->getSize().x) / _window->getSize().y;
-    glFrustum(-ratio, ratio, -1.f, 1.f, 1.0f, 500.f);
+    glFrustum(-ratio, ratio, -1.f, 1.f, 0.01f, 5000.f);
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
