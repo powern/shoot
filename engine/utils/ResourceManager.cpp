@@ -112,6 +112,9 @@ std::vector<Material> ResourceManager::loadMTL(const std::string &filename, cons
             }
             current = Material();
             s >> current.name;
+            while (!current.name.empty() && (current.name.back() == '\r')) {
+                current.name.pop_back();
+            }
         } else if (cmd == "map_Kd") {
             std::string texPath;
             s >> texPath;
@@ -228,6 +231,9 @@ std::vector<std::shared_ptr<Mesh>> ResourceManager::loadObjects(const std::strin
             s >> cmd;
             if (cmd == "usemtl") {
                 s >> currentMtlName;
+                while (!currentMtlName.empty() && (currentMtlName.back() == '\r')) {
+                    currentMtlName.pop_back();
+                }
                 // Find material index
                 currentMtlIndex = -1;
                 for (size_t mi = 0; mi < materials.size(); mi++) {
