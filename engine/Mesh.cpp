@@ -40,6 +40,8 @@ void Mesh::loadObj(const std::string &filename, const Vec3D &scale) {
         for (auto &tri : obj->triangles()) {
             _tris.push_back(tri);
         }
+        auto &srcMats = obj->materials();
+        _materials.insert(_materials.end(), srcMats.begin(), srcMats.end());
     }
     this->scale(scale);
 }
@@ -59,6 +61,15 @@ void Mesh::setColor(const sf::Color &c) {
 
     // because we change the color of mesh we should update geometry with a new color
     glFreeFloatArray();
+}
+
+bool Mesh::hasTextures() const {
+    for (auto &m : _materials) {
+        if (m.hasTexture) {
+            return true;
+        }
+    }
+    return false;
 }
 
 Mesh
@@ -168,11 +179,15 @@ void Mesh::setTriangles(vector<Triangle>&& t) {
 Mesh::~Mesh() {
     delete[] _geometry;
     _geometry = nullptr;
+    delete[] _texGeometry;
+    _texGeometry = nullptr;
 }
 
 void Mesh::glFreeFloatArray() {
     delete[] _geometry;
     _geometry = nullptr;
+    delete[] _texGeometry;
+    _texGeometry = nullptr;
 }
 
 GLfloat *Mesh::glFloatArray() const {
@@ -210,6 +225,28 @@ GLfloat *Mesh::glFloatArray() const {
     }
 
     return _geometry;
+}
+
+GLfloat *Mesh::glTexFloatArray() const {
+    if(_texGeometry != nullptr) {
+        return _texGeometry;
+    }
+    _texGeometry = new GLfloat[5 * 3 * _tris.size()];
+
+    for (size_t i = 0; i < _tris.size(); i++) {
+        unsigned stride = 15 * i;
+        Triangle triangle = _tris[i];
+
+        for (int k = 0; k < 3; k++) {
+            _texGeometry[stride + 5 * k + 0] = static_cast<GLfloat>(triangle[k].x());
+            _texGeometry[stride + 5 * k + 1] = static_cast<GLfloat>(triangle[k].y());
+            _texGeometry[stride + 5 * k + 2] = static_cast<GLfloat>(triangle[k].z());
+            _texGeometry[stride + 5 * k + 3] = static_cast<GLfloat>(triangle.uv(k).x());
+            _texGeometry[stride + 5 * k + 4] = static_cast<GLfloat>(triangle.uv(k).y());
+        }
+    }
+
+    return _texGeometry;
 }
 
 Mesh Mesh::Cube(ObjectNameTag tag, double size, sf::Color color) {

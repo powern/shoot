@@ -237,3 +237,49 @@ void Screen::glDrawMesh(GLfloat* geometry, GLfloat* view, GLfloat* model, size_t
     // Draw the mesh
     glDrawArrays(GL_TRIANGLES, 0, count);
 }
+
+void Screen::prepareToGlDrawTexturedMesh() {
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glClearDepth(1.f);
+    glDepthFunc(GL_LESS);
+
+    glDisable(GL_LIGHTING);
+    glEnable(GL_TEXTURE_2D);
+
+    glViewport(0, 0, _window->getSize().x, _window->getSize().y);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    GLfloat ratio = static_cast<float>(_window->getSize().x) / _window->getSize().y;
+    glFrustum(-ratio, ratio, -1.f, 1.f, 1.0f, 500.f);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
+
+    glMatrixMode(GL_MODELVIEW);
+}
+
+void Screen::glDrawTexturedMesh(GLfloat* geometry, GLfloat* view, GLfloat* model, size_t count,
+                                 const sf::Texture *texture) {
+    glVertexPointer(3, GL_FLOAT, 5 * sizeof(GLfloat), geometry);
+    glTexCoordPointer(2, GL_FLOAT, 5 * sizeof(GLfloat), geometry + 3);
+
+    if (texture != nullptr) {
+        sf::Texture::bind(texture);
+    } else {
+        sf::Texture::bind(nullptr);
+    }
+
+    glLoadIdentity();
+    glLoadMatrixf(view);
+    glMultMatrixf(model);
+
+    glDrawArrays(GL_TRIANGLES, 0, count);
+}

@@ -2,7 +2,14 @@
 #include "Consts.h"
 
 Triangle::Triangle(const Vec4D &p1, const Vec4D &p2, const Vec4D &p3, sf::Color color) : _color(color),
-                                                                                         _points{p1, p2, p3} {
+                                                                                          _points{p1, p2, p3} {
+    calculateNormal();
+}
+
+Triangle::Triangle(const Vec4D &p1, const Vec4D &p2, const Vec4D &p3,
+                   const Vec2D &uv1, const Vec2D &uv2, const Vec2D &uv3,
+                   int materialIndex, sf::Color color)
+    : _color(color), _points{p1, p2, p3}, _uv{uv1, uv2, uv3}, _materialIndex(materialIndex) {
     calculateNormal();
 }
 
@@ -18,12 +25,13 @@ void Triangle::calculateNormal() {
     }
 }
 
-Triangle::Triangle(const Triangle &triangle) : _points{triangle._points[0], triangle._points[1], triangle._points[2]},
-                                               _color(triangle._color), _normal(triangle._normal) {
-}
-
 Triangle Triangle::operator*(const Matrix4x4 &matrix4X4) const {
-    return Triangle(matrix4X4 * _points[0], matrix4X4 * _points[1], matrix4X4 * _points[2], _color);
+    Triangle result(matrix4X4 * _points[0], matrix4X4 * _points[1], matrix4X4 * _points[2], _color);
+    result._uv[0] = _uv[0];
+    result._uv[1] = _uv[1];
+    result._uv[2] = _uv[2];
+    result._materialIndex = _materialIndex;
+    return result;
 }
 
 Vec3D Triangle::norm() const {

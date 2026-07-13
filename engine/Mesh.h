@@ -8,10 +8,12 @@
 
 #include "Triangle.h"
 #include "Object.h"
+#include "Material.h"
 
 class Mesh : public Object {
 private:
     std::vector<Triangle> _tris;
+    std::vector<Material> _materials;
     sf::Color _color = sf::Color(255, 245, 194);
     bool _visible = true;
     double _boundingRadius = 0;
@@ -22,6 +24,7 @@ private:
 
     // OpenGL
     mutable GLfloat* _geometry = nullptr;
+    mutable GLfloat* _texGeometry = nullptr;
 public:
     explicit Mesh(ObjectNameTag nameTag) : Object(std::move(nameTag)) {};
 
@@ -42,6 +45,8 @@ public:
 
     [[nodiscard]] std::vector<Triangle> const &triangles() const { return _tris; }
 
+    [[nodiscard]] std::vector<Material>& materials() { return _materials; }
+
     void setTriangles(std::vector<Triangle>&& t);
 
     [[nodiscard]] size_t size() const { return _tris.size() * 3; }
@@ -58,6 +63,8 @@ public:
 
     [[nodiscard]] bool isVisible() const { return _visible; }
 
+    [[nodiscard]] bool hasTextures() const;
+
     ~Mesh() override;
 
     Mesh static Cube(ObjectNameTag tag, double size = 1.0, sf::Color color = sf::Color(0,0,0));
@@ -69,6 +76,7 @@ public:
 
     // OpenGL functions
     GLfloat *glFloatArray() const;
+    GLfloat *glTexFloatArray() const;
     void glFreeFloatArray();
 };
 
