@@ -86,21 +86,6 @@ std::vector<std::shared_ptr<Triangle>> Camera::project(std::shared_ptr<Mesh> mes
     return this->_triangles;
 }
 
-bool Camera::isInFrustum(const Vec3D &worldPos, double radius) const {
-    if (!_ready) {
-        return true;
-    }
-    Vec4D viewPos4 = invModel() * Vec4D(worldPos.x(), worldPos.y(), worldPos.z(), 1.0);
-    Vec3D viewPos(viewPos4.x(), viewPos4.y(), viewPos4.z());
-    
-    for (auto &plane : _clipPlanes) {
-        if (plane.distance(viewPos) < -radius) {
-            return false;
-        }
-    }
-    return true;
-}
-
 void Camera::clear() {
     // Cleaning all _tris and recalculation of View matrix
     _triangles.clear();

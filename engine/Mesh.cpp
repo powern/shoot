@@ -21,19 +21,6 @@ Mesh &Mesh::operator*=(const Matrix4x4 &matrix4X4) {
     return *this;
 }
 
-void Mesh::computeBoundingRadius() {
-    _boundingRadius = 0;
-    for (auto &t : _tris) {
-        for (int i = 0; i < 3; i++) {
-            double d = Vec3D(t[i]).sqrAbs();
-            if (d > _boundingRadius) {
-                _boundingRadius = d;
-            }
-        }
-    }
-    _boundingRadius = sqrt(_boundingRadius);
-}
-
 void Mesh::loadObj(const std::string &filename, const Vec3D &scale) {
     _tris.clear();
     auto objects = ResourceManager::loadObjects(filename);
@@ -43,16 +30,13 @@ void Mesh::loadObj(const std::string &filename, const Vec3D &scale) {
         }
     }
     this->scale(scale);
-    computeBoundingRadius();
 }
 
 Mesh::Mesh(ObjectNameTag nameTag, const std::string &filename, const Vec3D &scale) : Object(std::move(nameTag)) {
     loadObj(filename, scale);
 }
 
-Mesh::Mesh(ObjectNameTag nameTag, const vector<Triangle> &tries) : Object(std::move(nameTag)), _tris(tries) {
-    computeBoundingRadius();
-}
+Mesh::Mesh(ObjectNameTag nameTag, const vector<Triangle> &tries) : Object(std::move(nameTag)), _tris(tries) {}
 
 void Mesh::setColor(const sf::Color &c) {
     _color = c;
@@ -167,7 +151,6 @@ void Mesh::setOpacity(double t) {
 
 void Mesh::setTriangles(vector<Triangle>&& t) {
     _tris = std::move(t);
-    computeBoundingRadius();
 }
 
 Mesh::~Mesh() {

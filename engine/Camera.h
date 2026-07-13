@@ -30,8 +30,6 @@ public:
 
     void init(int width, int height, double fov = 90.0, double ZNear = 0.01, double ZFar = 5000.0);
 
-    [[nodiscard]] bool isInFrustum(const Vec3D &worldPos, double radius) const;
-
     std::vector<std::shared_ptr<Triangle>> project(std::shared_ptr<Mesh> mesh);
 
     void clear();
