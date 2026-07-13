@@ -150,6 +150,12 @@ void Shooter::update() {
         screen->setMouseCursorVisible(!inGame);
         screen->setCursorCentered(inGame);
         screen->renderWindow()->setMouseCursorGrabbed(inGame);
+        if (inGame) {
+            // Reset cursor to center to avoid a large delta on re-entry
+            sf::Vector2i center(screen->width() / 2, screen->height() / 2);
+            sf::Mouse::setPosition(center, *screen->renderWindow());
+            sf::Vector2i _ignore = screen->getAndResetMouseDelta(); (void)_ignore;
+        }
     }
 
     if (keyboard->isKeyTapped(sf::Keyboard::O)) {
@@ -368,6 +374,9 @@ void Shooter::play() {
     screen->setMouseCursorVisible(false);
     screen->setCursorCentered(true);
     screen->renderWindow()->setMouseCursorGrabbed(true);
+    // Center cursor immediately and discard the initial delta
+    sf::Vector2i center(screen->width() / 2, screen->height() / 2);
+    sf::Mouse::setPosition(center, *screen->renderWindow());
     sf::Vector2i _ignore = screen->getAndResetMouseDelta(); (void)_ignore;
 }
 
