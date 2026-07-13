@@ -290,20 +290,6 @@ std::vector<std::shared_ptr<Mesh>> ResourceManager::loadObjects(const std::strin
             // Triangulate: for convex polygons, use triangle fan
             size_t n = vIdx.size();
             if (n >= 3) {
-                static bool firstFace = true;
-                if (firstFace) {
-                    firstFace = false;
-                    Log::log("  FIRST FACE: '" + line + "'  n=" + std::to_string(n));
-                    for (size_t vi = 0; vi < n; vi++) {
-                        Log::log("    v" + std::to_string(vi) + " idx: v=" + std::to_string(vIdx[vi]) +
-                                 " vt=" + std::to_string(vtIdx[vi]) + " vn=" + std::to_string(vnIdx[vi]) +
-                                 " pos=(" + std::to_string(verts[vIdx[vi]].x()) + "," +
-                                 std::to_string(verts[vIdx[vi]].y()) + "," +
-                                 std::to_string(verts[vIdx[vi]].z()) + ")" +
-                                 " uv=(" + std::to_string(uvs[vtIdx[vi]].x()) + "," +
-                                 std::to_string(uvs[vtIdx[vi]].y()) + ")");
-                    }
-                }
                 sf::Color faceColor(255, 255, 255);
                 if (currentMtlIndex < 0 || currentMtlIndex >= (int)materials.size()) {
                     // Try custom material from 'g' line (backward compat)
