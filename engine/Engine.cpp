@@ -72,7 +72,6 @@ void Engine::create(int screenWidth, int screenHeight, const std::string &name, 
             if (_useOpenGL) {
                 GLfloat *view = camera->glInvModel();
                 screen->popGLStates();
-                glClear(GL_DEPTH_BUFFER_BIT);
                 screen->prepareToGlDrawMesh();
                 for (auto &it : *world) {
                     if (it.second->isVisible()) {
