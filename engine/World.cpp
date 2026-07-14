@@ -24,7 +24,8 @@ std::shared_ptr<RigidBody> World::loadBody(const ObjectNameTag &tag, const strin
     return _objects[tag];
 }
 
-IntersectionInformation World::rayCast(const Vec3D &from, const Vec3D &to, const std::string &skipTags) {
+IntersectionInformation World::rayCast(const Vec3D &from, const Vec3D &to, const std::string &skipTags,
+                                        bool cullBackFaces) {
 
     // make vector of tags, that we are going to escape
     vector<std::string> tagsToSkip;
@@ -38,7 +39,7 @@ IntersectionInformation World::rayCast(const Vec3D &from, const Vec3D &to, const
     Vec3D point{};
     Triangle triangle;
     std::string bodyName;
-    double minDistance = Consts::RAY_CAST_MAX_DISTANCE;
+    double minDistance = Consts::RAY_CAST_MAX_DISTANCE * Consts::RAY_CAST_MAX_DISTANCE;
     std::shared_ptr<RigidBody> intersectedBody = nullptr;
 
     for (auto&[name, body]  : _objects) {
@@ -55,32 +56,27 @@ IntersectionInformation World::rayCast(const Vec3D &from, const Vec3D &to, const
         }
 
         Matrix4x4 model = body->model();
-        Matrix4x4 invModel = body->invModel();
-
-        Vec3D v = (to - from).normalized();
-        Vec3D v_model = invModel*v;
-        Vec3D from_model = invModel*(from - body->position());
-        Vec3D to_model = invModel*(to - body->position());
-
 
         for (auto &tri : body->triangles()) {
 
-            if(tri.norm().dot(v_model) > 0) {
-                continue;
+            Triangle worldTri(model * tri[0], model * tri[1], model * tri[2], tri.color());
+
+            if (cullBackFaces) {
+                Vec3D v = (to - from).normalized();
+                if (worldTri.norm().dot(v) > 0) {
+                    continue;
+                }
             }
 
-            auto intersection = Plane(tri).intersection(from_model, to_model);
+            auto plane = Plane(worldTri);
+            auto intersection = plane.intersection(from, to);
 
-            if (intersection.second > 0 && tri.isPointInside(intersection.first)) {
-
-                Triangle globalTriangle(model * tri[0], model * tri[1], model * tri[2], tri.color());
-                auto globalIntersection = Plane(globalTriangle).intersection(from, to);
-                double globalDistance = (globalIntersection.first - from).abs();
-
-                if(globalDistance < minDistance) {
-                    minDistance = globalDistance;
-                    point = globalIntersection.first;
-                    triangle = globalTriangle;
+            if (intersection.second > 0 && worldTri.isPointInside(intersection.first)) {
+                double distSq = (intersection.first - from).sqrAbs();
+                if (distSq < minDistance && distSq > Consts::EPS) {
+                    minDistance = distSq;
+                    point = intersection.first;
+                    triangle = worldTri;
                     bodyName = name.str();
                     intersected = true;
                     intersectedBody = body;

@@ -64,7 +64,8 @@ public:
                  const Matrix4x4 &postTransform = Matrix4x4::Identity());
 
     // std::string skipTags is a string that consist of all objects we want to skip in ray casting
-    IntersectionInformation rayCast(const Vec3D &from, const Vec3D &to, const std::string &skipTags = "");
+    IntersectionInformation rayCast(const Vec3D &from, const Vec3D &to, const std::string &skipTags = "",
+                                    bool cullBackFaces = true);
 
     std::map<ObjectNameTag, std::shared_ptr<RigidBody>>::iterator begin() { return _objects.begin(); }
     std::map<ObjectNameTag, std::shared_ptr<RigidBody>>::iterator end() { return _objects.end(); }

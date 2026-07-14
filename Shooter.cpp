@@ -117,12 +117,55 @@ void Shooter::start() {
 
     std::string mapPath = mapCfg.get<std::string>("mapPath", ShooterConsts::DOOM_MAP_OBJ);
     double scale = mapCfg.get<double>("scale", 1.35);
-    Vec3D spawn(mapCfg.get<double>("spawnX", 0), mapCfg.get<double>("spawnY", 1.0), mapCfg.get<double>("spawnZ", 0));
+    Vec3D configuredSpawn(mapCfg.get<double>("spawnX", 0), mapCfg.get<double>("spawnY", 1.0), mapCfg.get<double>("spawnZ", 0));
     double walkSpeed = mapCfg.get<double>("walkSpeed", 150);
     bool useTextures = mapCfg.get<int>("useTextures", 0) != 0;
     bool genBonuses = mapCfg.get<int>("generateBonuses", 0) != 0;
 
     world->loadMap(mapPath, Vec3D{scale, scale, scale}, Matrix4x4::RotationX(-Consts::PI / 2.0));
+
+    // Compute world AABB
+    Vec3D mapMin(1e9, 1e9, 1e9), mapMax(-1e9, -1e9, -1e9);
+    for (auto &it : *world) {
+        Matrix4x4 M = it.second->model();
+        for (auto &t : it.second->triangles()) {
+            for (int k = 0; k < 3; k++) {
+                Vec4D wv = M * t[k];
+                if (wv.x()<mapMin.x()) mapMin=Vec3D(wv.x(),mapMin.y(),mapMin.z());
+                if (wv.y()<mapMin.y()) mapMin=Vec3D(mapMin.x(),wv.y(),mapMin.z());
+                if (wv.z()<mapMin.z()) mapMin=Vec3D(mapMin.x(),mapMin.y(),wv.z());
+                if (wv.x()>mapMax.x()) mapMax=Vec3D(wv.x(),mapMax.y(),mapMax.z());
+                if (wv.y()>mapMax.y()) mapMax=Vec3D(mapMax.x(),wv.y(),mapMax.z());
+                if (wv.z()>mapMax.z()) mapMax=Vec3D(mapMax.x(),mapMax.y(),wv.z());
+            }
+        }
+    }
+
+    // Validate spawn against floor geometry
+    constexpr double margin = 100.0;
+    constexpr double playerFeetOffset = 0.5;
+    constexpr double spawnClearance = 0.05;
+    Vec3D validatedSpawn = configuredSpawn;
+
+    auto floorHit = world->rayCast(
+        Vec3D{configuredSpawn.x(), mapMax.y() + margin, configuredSpawn.z()},
+        Vec3D{configuredSpawn.x(), mapMin.y() - margin, configuredSpawn.z()},
+        "", false);
+
+    Log::log("=== SPAWN VALIDATION ===");
+    Log::log("  configured=(" + std::to_string(configuredSpawn.x()) + "," + std::to_string(configuredSpawn.y()) + "," + std::to_string(configuredSpawn.z()) + ")");
+
+    if (floorHit.intersected) {
+        validatedSpawn = Vec3D{
+            configuredSpawn.x(),
+            floorHit.pointOfIntersection.y() + playerFeetOffset + spawnClearance,
+            configuredSpawn.z()
+        };
+        Log::log("  floorY=" + std::to_string(floorHit.pointOfIntersection.y()));
+        Log::log("  validated=(" + std::to_string(validatedSpawn.x()) + "," + std::to_string(validatedSpawn.y()) + "," + std::to_string(validatedSpawn.z()) + ")");
+    } else {
+        Log::log("  ERROR: no floor under configured spawn X/Z");
+    }
 
     playerController->setWalkSpeed(walkSpeed);
 
@@ -142,7 +185,6 @@ void Shooter::start() {
     Log::log("=== MAP CONFIG ===");
     Log::log("  mapPath=" + mapPath + " scale=" + std::to_string(scale) +
              " walkSpeed=" + std::to_string(walkSpeed) + " useTextures=" + std::to_string(useTextures));
-    Log::log("  spawn=(" + std::to_string(spawn.x()) + " " + std::to_string(spawn.y()) + " " + std::to_string(spawn.z()) + ")");
 
     // TODO: encapsulate call backs inside Player
     player->setAddTraceCallBack([this](const Vec3D &from, const Vec3D &to) {
@@ -159,7 +201,7 @@ void Shooter::start() {
 
     player->reInitWeapons();
 
-    player->translateToPoint(spawn);
+    player->translateToPoint(validatedSpawn);
     camera->translateToPoint(player->position() + Vec3D{0, 1.8, 0});
     Log::log("PLAYER POS after spawn: " + std::to_string(player->position().x()) + " " +
              std::to_string(player->position().y()) + " " + std::to_string(player->position().z()));
@@ -189,7 +231,7 @@ void Shooter::start() {
                            SoundController::loadAndPlay(SoundTag("click"), ShooterConsts::CLICK_SOUND);
                        }, "Server: " + client->serverIp().toString(), 5, 5, ShooterConsts::MAIN_MENU_GUI, {0, 66}, {0, 86}, {0, 46},
                        Consts::MEDIUM_FONT, {255, 255, 255});
-    Vec3D respawnPos = spawn;
+    Vec3D respawnPos = validatedSpawn;
     mainMenu.addButton(screen->width() / 2, 350, 200, 20, [this, respawnPos]() {
         this->player->translateToPoint(respawnPos);
         this->player->setVelocity({});
@@ -363,10 +405,21 @@ void Shooter::update() {
         } else {
             playerController->update();
 
-            // Floor clamping: raycast downward to find floor height
+            // Floor clamping: two-sided raycast downward
             Vec3D from = player->position();
             Vec3D to = from - Vec3D{0, 500, 0};
-            auto hit = world->rayCast(from, to, "Player Weapon fireTrace bulletHole");
+            auto hit = world->rayCast(from, to, "", false);
+            {
+                static int probeCount = 0;
+                if (probeCount < 10) {
+                    probeCount++;
+                    bool grounded = hit.intersected && (player->position().y() <= hit.pointOfIntersection.y() + 0.55);
+                    Log::log("GROUND PROBE: playerY=" + std::to_string(player->position().y()) +
+                             " floorY=" + (hit.intersected ? std::to_string(hit.pointOfIntersection.y()) : "N/A") +
+                             " velY=" + std::to_string(player->velocity().y()) +
+                             " grounded=" + (grounded ? "true" : "false"));
+                }
+            }
             if (hit.intersected) {
                 double floorY = hit.pointOfIntersection.y();
                 if (player->position().y() < floorY + 0.5) {
