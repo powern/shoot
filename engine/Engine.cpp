@@ -68,48 +68,15 @@ void Engine::create(int screenWidth, int screenHeight, const std::string &name, 
             if (_useOpenGL) {
                 GLfloat *view = camera->glInvModel();
                 screen->popGLStates();
-
-                // Pass 1: non-textured meshes (old pipeline)
                 screen->prepareToGlDrawMesh();
                 for (auto &it : *world) {
-                    if (it.second->isVisible() && !it.second->hasTextures()) {
+                    if (it.second->isVisible()) {
                         GLfloat *model = it.second->glModel();
                         GLfloat *geometry = it.second->glFloatArray();
                         screen->glDrawMesh(geometry, view, model, 3 * it.second->triangles().size());
                         delete[] model;
                     }
                 }
-
-                // Pass 2: textured meshes
-                screen->prepareToGlDrawTexturedMesh();
-                for (auto &it : *world) {
-                    if (it.second->isVisible() && it.second->hasTextures()) {
-                        GLfloat *model = it.second->glModel();
-                        GLfloat *geometry = it.second->glTexFloatArray();
-                        auto &materials = it.second->materials();
-
-                        // Draw batches by material
-                        size_t triCount = it.second->triangles().size();
-                        for (size_t ti = 0; ti < triCount; ) {
-                            int matIdx = it.second->triangles()[ti].materialIndex();
-                            size_t batchStart = ti;
-                            while (ti < triCount && it.second->triangles()[ti].materialIndex() == matIdx) {
-                                ti++;
-                            }
-                            size_t batchCount = ti - batchStart;
-
-                            const sf::Texture *tex = nullptr;
-                            if (matIdx >= 0 && matIdx < (int)materials.size()) {
-                                tex = materials[matIdx].texture.get();
-                            }
-
-                            GLfloat *batchGeo = geometry + 5 * 3 * batchStart;
-                            screen->glDrawTexturedMesh(batchGeo, view, model, 3 * batchCount, tex);
-                        }
-                        delete[] model;
-                    }
-                }
-
                 screen->pushGLStates();
                 delete[] view;
             } else {
