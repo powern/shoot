@@ -13,6 +13,7 @@ struct MapConfig {
     Matrix4x4 transform;
     Vec3D playerSpawn;
     bool useTextures;
+    bool generateBonuses;
 };
 
 static const MapConfig LEGACY_MAP_CONFIG{
@@ -20,14 +21,16 @@ static const MapConfig LEGACY_MAP_CONFIG{
     Vec3D{5, 5, 5},
     Matrix4x4::Identity(),
     Vec3D{0, 10, 0},
-    false
+    false,
+    true
 };
 
 static const MapConfig DOOM_MAP_CONFIG{
     ShooterConsts::DOOM_MAP_OBJ,
-    Vec3D{0.1, 0.1, 0.1},
+    Vec3D{1.0, 1.0, 1.0},
     Matrix4x4::RotationX(-Consts::PI / 2.0),
     Vec3D{0, 1.0, 0},
+    false,
     false
 };
 
@@ -70,8 +73,6 @@ void Shooter::initNetwork() {
 
     if (clientIp == sf::IpAddress::LocalHost) {
         server->start(serverPort);
-        if (server->isWorking())
-            server->generateBonuses();
     }
 
     client->connect(clientIp, clientPort);
@@ -105,6 +106,10 @@ void Shooter::start() {
                 it.second->setColor(sf::Color(160, 160, 160));
             }
         }
+    }
+
+    if (mapConfig.generateBonuses && server->isWorking()) {
+        server->generateBonuses();
     }
 
     Log::log("=== MAP DIAGNOSTICS ===");
