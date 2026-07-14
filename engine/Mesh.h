@@ -35,7 +35,12 @@ public:
 
     Mesh &operator=(const Mesh &mesh) = delete;
 
-    Mesh(const Mesh &mesh) = default;
+    Mesh(const Mesh &mesh) : Object(mesh),
+                             _tris(mesh._tris),
+                             _materials(mesh._materials),
+                             _color(mesh._color),
+                             _visible(mesh._visible),
+                             _boundingRadius(mesh._boundingRadius) {};
 
     explicit Mesh(ObjectNameTag nameTag, const std::vector<Triangle> &tries);
 
