@@ -52,6 +52,8 @@ add_executable(${CMAKE_PROJECT_NAME}
         engine/utils/Timer.h
         engine/utils/ResourceManager.h
         engine/utils/ResourceManager.cpp
+        engine/utils/Config.h
+        engine/utils/Config.cpp
         engine/World.h
         engine/World.cpp
         engine/Camera.h

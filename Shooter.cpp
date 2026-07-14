@@ -5,6 +5,7 @@
 #include "engine/animation/Animations.h"
 #include "ShooterConsts.h"
 #include "engine/utils/Log.h"
+#include "engine/utils/Config.h"
 #include "engine/io/SoundController.h"
 
 struct MapConfig {
@@ -98,48 +99,35 @@ void Shooter::start() {
 
     screen->setMouseCursorVisible(true);
 
-    const MapConfig &mapConfig = DOOM_MAP_CONFIG;
-
-    // Load map config from file
-    MapConfig fileConfig = mapConfig;
-    {
-        std::ifstream cfg("map_config.txt");
-        if (cfg.is_open()) {
-            std::string key, eq;
-            double spawnX = fileConfig.playerSpawn.x();
-            double spawnY = fileConfig.playerSpawn.y();
-            double spawnZ = fileConfig.playerSpawn.z();
-            while (cfg >> key >> eq) {
-                if (eq != "=") continue;
-                if (key == "mapPath") cfg >> fileConfig.path;
-                else if (key == "scale") { double s; cfg >> s; fileConfig.scale = Vec3D{s, s, s}; }
-                else if (key == "spawnX") cfg >> spawnX;
-                else if (key == "spawnY") cfg >> spawnY;
-                else if (key == "spawnZ") cfg >> spawnZ;
-                else if (key == "walkSpeed") cfg >> fileConfig.walkSpeed;
-                else if (key == "useTextures") { int v; cfg >> v; fileConfig.useTextures = (v != 0); }
-            }
-            fileConfig.playerSpawn = Vec3D{spawnX, spawnY, spawnZ};
-        } else {
-            std::ofstream out("map_config.txt");
-            out << "mapPath = " << fileConfig.path << "\n"
-                << "scale = 1.35\n"
-                << "spawnX = 0\n"
-                << "spawnY = 1.0\n"
-                << "spawnZ = 0\n"
-                << "walkSpeed = 150\n"
-                << "useTextures = 0\n";
-        }
+    // Load config
+    Config mapCfg;
+    if (!mapCfg.load("map_config.cfg")) {
+        mapCfg.saveDefaults("map_config.cfg", {
+            {"mapPath", ShooterConsts::DOOM_MAP_OBJ},
+            {"scale", "1.35"},
+            {"spawnX", "0"},
+            {"spawnY", "1.0"},
+            {"spawnZ", "0"},
+            {"walkSpeed", "150"},
+            {"useTextures", "0"},
+            {"generateBonuses", "0"}
+        });
+        mapCfg.load("map_config.cfg");
     }
 
-    const MapConfig &activeConfig = fileConfig;
+    std::string mapPath = mapCfg.get<std::string>("mapPath", ShooterConsts::DOOM_MAP_OBJ);
+    double scale = mapCfg.get<double>("scale", 1.35);
+    Vec3D spawn(mapCfg.get<double>("spawnX", 0), mapCfg.get<double>("spawnY", 1.0), mapCfg.get<double>("spawnZ", 0));
+    double walkSpeed = mapCfg.get<double>("walkSpeed", 150);
+    bool useTextures = mapCfg.get<int>("useTextures", 0) != 0;
+    bool genBonuses = mapCfg.get<int>("generateBonuses", 0) != 0;
 
-    world->loadMap(activeConfig.path, activeConfig.scale, activeConfig.transform);
+    world->loadMap(mapPath, Vec3D{scale, scale, scale}, Matrix4x4::RotationX(-Consts::PI / 2.0));
 
-    playerController->setWalkSpeed(activeConfig.walkSpeed);
+    playerController->setWalkSpeed(walkSpeed);
 
-    // When textures are disabled, assign visible fallback colors to geometry without vertex colors
-    if (!activeConfig.useTextures) {
+    // When textures are disabled, assign visible fallback colors
+    if (!useTextures) {
         for (auto &it : *world) {
             if (!it.second->materials().empty()) {
                 it.second->setColor(sf::Color(160, 160, 160));
@@ -147,19 +135,14 @@ void Shooter::start() {
         }
     }
 
-    if (activeConfig.generateBonuses && server->isWorking()) {
+    if (genBonuses && server->isWorking()) {
         server->generateBonuses();
     }
 
-    Log::log("=== MAP DIAGNOSTICS ===");
-    Log::log("Config: path=" + activeConfig.path + " scale=" +
-             std::to_string(activeConfig.scale.x()) + "," +
-             std::to_string(activeConfig.scale.y()) + "," +
-             std::to_string(activeConfig.scale.z()) + " useTextures=" +
-             std::to_string(activeConfig.useTextures));
-    Log::log("Spawn: " + std::to_string(activeConfig.playerSpawn.x()) + " " +
-             std::to_string(activeConfig.playerSpawn.y()) + " " +
-             std::to_string(activeConfig.playerSpawn.z()));
+    Log::log("=== MAP CONFIG ===");
+    Log::log("  mapPath=" + mapPath + " scale=" + std::to_string(scale) +
+             " walkSpeed=" + std::to_string(walkSpeed) + " useTextures=" + std::to_string(useTextures));
+    Log::log("  spawn=(" + std::to_string(spawn.x()) + " " + std::to_string(spawn.y()) + " " + std::to_string(spawn.z()) + ")");
 
     // TODO: encapsulate call backs inside Player
     player->setAddTraceCallBack([this](const Vec3D &from, const Vec3D &to) {
@@ -176,7 +159,7 @@ void Shooter::start() {
 
     player->reInitWeapons();
 
-    player->translateToPoint(mapConfig.playerSpawn);
+    player->translateToPoint(spawn);
     camera->translateToPoint(player->position() + Vec3D{0, 1.8, 0});
     player->setAcceleration(Vec3D{0, 0, 0});
     player->attach(camera);
@@ -205,7 +188,7 @@ void Shooter::start() {
                            SoundController::loadAndPlay(SoundTag("click"), ShooterConsts::CLICK_SOUND);
                        }, "Server: " + client->serverIp().toString(), 5, 5, ShooterConsts::MAIN_MENU_GUI, {0, 66}, {0, 86}, {0, 46},
                        Consts::MEDIUM_FONT, {255, 255, 255});
-    Vec3D respawnPos = activeConfig.playerSpawn;
+    Vec3D respawnPos = spawn;
     mainMenu.addButton(screen->width() / 2, 350, 200, 20, [this, respawnPos]() {
         this->player->translateToPoint(respawnPos);
         this->player->setVelocity({});
