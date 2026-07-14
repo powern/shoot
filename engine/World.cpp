@@ -97,6 +97,12 @@ void World::loadMap(const std::string &filename, const Vec3D &scale, const Matri
         obj->transform(postTransform);
         obj->setStatic(true);
         obj->setCollider(false);
+        // Build collision grid from map triangles
+        for (auto &t : i->triangles()) {
+            Matrix4x4 M = obj->model();
+            Triangle wt(M * t[0], M * t[1], M * t[2], t.color());
+            collisionGrid.addTriangle(wt);
+        }
     }
 }
 
@@ -254,6 +260,42 @@ void World::stepPhysics(double dt) {
 
 void World::update() {
     stepPhysics(Time::deltaTime());
+}
+
+void World::buildCollisionGrid() {
+    collisionGrid.clear();
+    for (auto &[name, body] : _objects) {
+        if (!body->isStatic()) continue;
+        Matrix4x4 M = body->model();
+        for (auto &t : body->triangles()) {
+            Triangle wt(M * t[0], M * t[1], M * t[2], t.color());
+            collisionGrid.addTriangle(wt);
+        }
+    }
+}
+
+Vec3D World::resolveCollision(const Vec3D &pos, double radius) const {
+    auto tris = collisionGrid.querySphere(pos, radius);
+    Vec3D result = pos;
+    for (auto *tri : tris) {
+        // Closest point on triangle to position
+        Vec3D p0(tri->operator[](0).x(), tri->operator[](0).y(), tri->operator[](0).z());
+        Vec3D p1(tri->operator[](1).x(), tri->operator[](1).y(), tri->operator[](1).z());
+        Vec3D p2(tri->operator[](2).x(), tri->operator[](2).y(), tri->operator[](2).z());
+
+        // Find closest point on triangle to player pos (simple: project onto plane, clamp to edges)
+        Vec3D normal = tri->norm();
+        double dist = normal.dot(pos - p0);
+        if (dist < radius && dist > -radius) {
+            // Push player out of the triangle
+            if (dist > 0) {
+                result = result + normal * (radius - dist);
+            } else {
+                result = result - normal * (radius + dist);
+            }
+        }
+    }
+    return result;
 }
 
 std::shared_ptr<RigidBody> World::body(const ObjectNameTag &tag) {

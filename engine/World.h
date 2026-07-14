@@ -9,6 +9,7 @@
 #include "Camera.h"
 #include "io/Screen.h"
 #include "physics/RigidBody.h"
+#include "physics/CollisionGrid.h"
 
 struct IntersectionInformation final {
     const Vec3D pointOfIntersection;
@@ -71,6 +72,11 @@ public:
     std::map<ObjectNameTag, std::shared_ptr<RigidBody>>::iterator end() { return _objects.end(); }
 
     void stepPhysics(double dt);
+
+    // Collision grid for map geometry
+    CollisionGrid collisionGrid;
+    void buildCollisionGrid();
+    Vec3D resolveCollision(const Vec3D &pos, double radius) const;
 };
 
 

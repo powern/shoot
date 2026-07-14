@@ -92,6 +92,8 @@ add_executable(${CMAKE_PROJECT_NAME}
         engine/physics/RigidBody.cpp
         engine/physics/RigidBody.h
         engine/physics/Simplex.h
+        engine/physics/CollisionGrid.cpp
+        engine/physics/CollisionGrid.h
         engine/physics/HitBox.cpp
         engine/physics/HitBox.h
         engine/Object.cpp
