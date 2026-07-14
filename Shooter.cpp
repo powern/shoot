@@ -25,7 +25,7 @@ static const MapConfig LEGACY_MAP_CONFIG{
 
 static const MapConfig DOOM_MAP_CONFIG{
     ShooterConsts::DOOM_MAP_OBJ,
-    Vec3D{0.03, 0.03, 0.03},
+    Vec3D{0.05, 0.05, 0.05},
     Matrix4x4::RotationX(-Consts::PI / 2.0),
     Vec3D{0, 1.0, 0},
     false
@@ -94,7 +94,7 @@ void Shooter::start() {
 
     screen->setMouseCursorVisible(true);
 
-    const MapConfig &mapConfig = LEGACY_MAP_CONFIG;
+    const MapConfig &mapConfig = DOOM_MAP_CONFIG;
 
     world->loadMap(mapConfig.path, mapConfig.scale, mapConfig.transform);
 
