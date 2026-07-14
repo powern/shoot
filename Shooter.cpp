@@ -34,7 +34,7 @@ static const MapConfig DOOM_MAP_CONFIG{
     Vec3D{0, 1.0, 0},
     false,
     false,
-    15.0
+    50.0
 };
 
 using namespace std;
