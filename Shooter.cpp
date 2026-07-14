@@ -29,12 +29,12 @@ static const MapConfig LEGACY_MAP_CONFIG{
 
 static const MapConfig DOOM_MAP_CONFIG{
     ShooterConsts::DOOM_MAP_OBJ,
-    Vec3D{0.9, 0.9, 0.9},
+    Vec3D{1.35, 1.35, 1.35},
     Matrix4x4::RotationX(-Consts::PI / 2.0),
     Vec3D{0, 1.0, 0},
     false,
     false,
-    ShooterConsts::WALK_SPEED
+    15.0
 };
 
 using namespace std;
