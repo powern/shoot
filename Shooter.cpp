@@ -161,6 +161,8 @@ void Shooter::start() {
 
     player->translateToPoint(spawn);
     camera->translateToPoint(player->position() + Vec3D{0, 1.8, 0});
+    Log::log("PLAYER POS after spawn: " + std::to_string(player->position().x()) + " " +
+             std::to_string(player->position().y()) + " " + std::to_string(player->position().z()));
     player->attach(camera);
     world->addBody(player);
 
@@ -436,6 +438,8 @@ void Shooter::play() {
     screen->setMouseCursorVisible(false);
     screen->renderWindow()->setMouseCursorGrabbed(true);
     sf::Vector2i _ignore = screen->getAndResetMouseDelta(); (void)_ignore;
+    Log::log("PLAY POS after play(): " + std::to_string(player->position().x()) + " " +
+             std::to_string(player->position().y()) + " " + std::to_string(player->position().z()));
 }
 
 void Shooter::spawnPlayer(sf::Uint16 id) {
