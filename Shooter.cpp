@@ -14,6 +14,7 @@ struct MapConfig {
     Vec3D playerSpawn;
     bool useTextures;
     bool generateBonuses;
+    double walkSpeed;
 };
 
 static const MapConfig LEGACY_MAP_CONFIG{
@@ -22,7 +23,8 @@ static const MapConfig LEGACY_MAP_CONFIG{
     Matrix4x4::Identity(),
     Vec3D{0, 10, 0},
     false,
-    true
+    true,
+    ShooterConsts::WALK_SPEED
 };
 
 static const MapConfig DOOM_MAP_CONFIG{
@@ -31,7 +33,8 @@ static const MapConfig DOOM_MAP_CONFIG{
     Matrix4x4::RotationX(-Consts::PI / 2.0),
     Vec3D{0, 1.0, 0},
     false,
-    false
+    false,
+    50.0
 };
 
 using namespace std;
@@ -98,6 +101,8 @@ void Shooter::start() {
     const MapConfig &mapConfig = DOOM_MAP_CONFIG;
 
     world->loadMap(mapConfig.path, mapConfig.scale, mapConfig.transform);
+
+    playerController->setWalkSpeed(mapConfig.walkSpeed);
 
     // When textures are disabled, assign visible fallback colors to geometry without vertex colors
     if (!mapConfig.useTextures) {

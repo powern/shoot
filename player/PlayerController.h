@@ -11,12 +11,16 @@ private:
     std::shared_ptr<Keyboard> _keyboard;
     std::shared_ptr<Mouse> _mouse;
 
+    double _walkSpeed = ShooterConsts::WALK_SPEED;
+
     bool _inRunning = false;
     bool _isSliding = false;
     bool _isInSlowMo = false;
 
 public:
     PlayerController(std::shared_ptr<Player> player, std::shared_ptr<Keyboard> keyboard, std::shared_ptr<Mouse> mouse);
+
+    void setWalkSpeed(double speed) { _walkSpeed = speed; }
 
     void update();
 };
