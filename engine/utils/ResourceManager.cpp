@@ -230,9 +230,6 @@ std::vector<std::shared_ptr<Mesh>> ResourceManager::loadObjects(const std::strin
                 double x, y, z;
                 s >> x >> y >> z;
                 verts.emplace_back(x, y, z, 1.0);
-                if (verts.size() == 1) {
-                    Log::log("  FIRST VERTEX: v " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(z));
-                }
             }
             continue;
         }
@@ -301,14 +298,14 @@ std::vector<std::shared_ptr<Mesh>> ResourceManager::loadObjects(const std::strin
                 }
 
                 for (size_t fi = 1; fi < n - 1; fi++) {
-                    Vec4D p0 = (vIdx[0] < (int)verts.size()) ? verts[vIdx[0]] : Vec4D(0,0,0,1);
-                    Vec4D p1 = (vIdx[fi] < (int)verts.size()) ? verts[vIdx[fi]] : Vec4D(0,0,0,1);
-                    Vec4D p2 = (vIdx[fi+1] < (int)verts.size()) ? verts[vIdx[fi+1]] : Vec4D(0,0,0,1);
+                    Vec4D p0 = (vIdx[0] >= 0 && vIdx[0] < (int)verts.size()) ? verts[vIdx[0]] : Vec4D(0,0,0,1);
+                    Vec4D p1 = (vIdx[fi] >= 0 && vIdx[fi] < (int)verts.size()) ? verts[vIdx[fi]] : Vec4D(0,0,0,1);
+                    Vec4D p2 = (vIdx[fi+1] >= 0 && vIdx[fi+1] < (int)verts.size()) ? verts[vIdx[fi+1]] : Vec4D(0,0,0,1);
 
                     Vec2D uv0, uv1, uv2;
-                    if (vtIdx[0] < (int)uvs.size()) uv0 = uvs[vtIdx[0]];
-                    if (vtIdx[fi] < (int)uvs.size()) uv1 = uvs[vtIdx[fi]];
-                    if (vtIdx[fi+1] < (int)uvs.size()) uv2 = uvs[vtIdx[fi+1]];
+                    if (vtIdx[0] >= 0 && vtIdx[0] < (int)uvs.size()) uv0 = uvs[vtIdx[0]];
+                    if (vtIdx[fi] >= 0 && vtIdx[fi] < (int)uvs.size()) uv1 = uvs[vtIdx[fi]];
+                    if (vtIdx[fi+1] >= 0 && vtIdx[fi+1] < (int)uvs.size()) uv2 = uvs[vtIdx[fi+1]];
 
                     if (currentMtlIndex >= 0 && currentMtlIndex < (int)materials.size()) {
                         tris.emplace_back(p0, p1, p2, uv0, uv1, uv2, currentMtlIndex, faceColor);
