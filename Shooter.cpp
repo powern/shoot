@@ -158,11 +158,12 @@ void Shooter::start() {
     if (floorHit.intersected) {
         validatedSpawn = Vec3D{
             configuredSpawn.x(),
-            floorHit.pointOfIntersection.y() + playerFeetOffset + spawnClearance,
+            configuredSpawn.y(),  // use configured Y, not floor
             configuredSpawn.z()
         };
         Log::log("  floorY=" + std::to_string(floorHit.pointOfIntersection.y()));
         Log::log("  validated=(" + std::to_string(validatedSpawn.x()) + "," + std::to_string(validatedSpawn.y()) + "," + std::to_string(validatedSpawn.z()) + ")");
+        Log::log("  (using configured spawn Y, ignoring floor)");
     } else {
         Log::log("  ERROR: no floor under configured spawn X/Z");
     }
@@ -405,10 +406,10 @@ void Shooter::update() {
         } else {
             playerController->update();
 
-            // Floor clamping: two-sided raycast downward
+            // Floor clamping: one-sided raycast downward (only floors with normal pointing up)
             Vec3D from = player->position();
             Vec3D to = from - Vec3D{0, 500, 0};
-            auto hit = world->rayCast(from, to, "", false);
+            auto hit = world->rayCast(from, to, "", true);
             {
                 static int probeCount = 0;
                 if (probeCount < 10) {
