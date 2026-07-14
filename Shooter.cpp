@@ -94,14 +94,16 @@ void Shooter::start() {
 
     screen->setMouseCursorVisible(true);
 
-    const MapConfig &mapConfig = DOOM_MAP_CONFIG;
+    const MapConfig &mapConfig = LEGACY_MAP_CONFIG;
 
     world->loadMap(mapConfig.path, mapConfig.scale, mapConfig.transform);
 
-    // When textures are disabled, assign visible fallback colors to geometry
+    // When textures are disabled, assign visible fallback colors to geometry without vertex colors
     if (!mapConfig.useTextures) {
         for (auto &it : *world) {
-            it.second->setColor(sf::Color(160, 160, 160));
+            if (!it.second->materials().empty()) {
+                it.second->setColor(sf::Color(160, 160, 160));
+            }
         }
     }
 
