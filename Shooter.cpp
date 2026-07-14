@@ -430,7 +430,11 @@ void Shooter::update() {
             }
 
             // Collision grid: slide along walls
-            player->translateToPoint(world->resolveCollision(player->position(), 0.5));
+            Vec3D resolved = world->resolveCollision(player->position(), 1.0);
+            if ((resolved - player->position()).sqrAbs() > 0.0001) {
+                player->translateToPoint(resolved);
+                player->setVelocity(Vec3D{0, player->velocity().y(), 0});
+            }
         }
     } else {
         mainMenu.update();
