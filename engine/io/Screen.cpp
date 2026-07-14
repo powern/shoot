@@ -206,13 +206,18 @@ void Screen::prepareToGlDrawMesh() {
     // Configure the viewport (the same size as the window)
     glViewport(0, 0, _window->getSize().x, _window->getSize().y);
 
-    // Setup a perspective projection
+    // Setup a perspective projection with correct FOV
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     GLfloat ratio = static_cast<float>(_window->getSize().x) / _window->getSize().y;
-    glFrustum(-ratio, ratio, -1.f, 1.f, 0.01f, 5000.f);
+    GLfloat nearPlane = 0.01f;
+    GLfloat farPlane = 5000.0f;
+    GLfloat fovYRadians = 90.0f * Consts::PI / 180.0f;
+    GLfloat top = nearPlane * std::tan(fovYRadians * 0.5f);
+    GLfloat right = top * ratio;
+    glFrustum(-right, right, -top, top, nearPlane, farPlane);
 
-    // Enable position and texture coordinates vertex components
+    // Enable position and color components
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
 
@@ -256,7 +261,12 @@ void Screen::prepareToGlDrawTexturedMesh() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     GLfloat ratio = static_cast<float>(_window->getSize().x) / _window->getSize().y;
-    glFrustum(-ratio, ratio, -1.f, 1.f, 0.01f, 5000.f);
+    GLfloat nearPlane = 0.01f;
+    GLfloat farPlane = 5000.0f;
+    GLfloat fovYRadians = 90.0f * Consts::PI / 180.0f;
+    GLfloat top = nearPlane * std::tan(fovYRadians * 0.5f);
+    GLfloat right = top * ratio;
+    glFrustum(-right, right, -top, top, nearPlane, farPlane);
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
