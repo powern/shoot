@@ -161,7 +161,7 @@ void Shooter::start() {
                        }, "Server: " + client->serverIp().toString(), 5, 5, ShooterConsts::MAIN_MENU_GUI, {0, 66}, {0, 86}, {0, 46},
                        Consts::MEDIUM_FONT, {255, 255, 255});
     mainMenu.addButton(screen->width() / 2, 350, 200, 20, [this]() {
-        this->player->translateToPoint(Vec3D{0, 10, 0});
+        this->player->translateToPoint(DOOM_MAP_CONFIG.playerSpawn);
         this->player->setVelocity({});
         this->play();
         SoundController::loadAndPlay(SoundTag("click"), ShooterConsts::CLICK_SOUND);
