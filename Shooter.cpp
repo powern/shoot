@@ -100,12 +100,46 @@ void Shooter::start() {
 
     const MapConfig &mapConfig = DOOM_MAP_CONFIG;
 
-    world->loadMap(mapConfig.path, mapConfig.scale, mapConfig.transform);
+    // Load map config from file
+    MapConfig fileConfig = mapConfig;
+    {
+        std::ifstream cfg("map_config.txt");
+        if (cfg.is_open()) {
+            std::string key, eq;
+            double spawnX = fileConfig.playerSpawn.x();
+            double spawnY = fileConfig.playerSpawn.y();
+            double spawnZ = fileConfig.playerSpawn.z();
+            while (cfg >> key >> eq) {
+                if (eq != "=") continue;
+                if (key == "mapPath") cfg >> fileConfig.path;
+                else if (key == "scale") { double s; cfg >> s; fileConfig.scale = Vec3D{s, s, s}; }
+                else if (key == "spawnX") cfg >> spawnX;
+                else if (key == "spawnY") cfg >> spawnY;
+                else if (key == "spawnZ") cfg >> spawnZ;
+                else if (key == "walkSpeed") cfg >> fileConfig.walkSpeed;
+                else if (key == "useTextures") { int v; cfg >> v; fileConfig.useTextures = (v != 0); }
+            }
+            fileConfig.playerSpawn = Vec3D{spawnX, spawnY, spawnZ};
+        } else {
+            std::ofstream out("map_config.txt");
+            out << "mapPath = " << fileConfig.path << "\n"
+                << "scale = 1.35\n"
+                << "spawnX = 0\n"
+                << "spawnY = 1.0\n"
+                << "spawnZ = 0\n"
+                << "walkSpeed = 150\n"
+                << "useTextures = 0\n";
+        }
+    }
 
-    playerController->setWalkSpeed(mapConfig.walkSpeed);
+    const MapConfig &activeConfig = fileConfig;
+
+    world->loadMap(activeConfig.path, activeConfig.scale, activeConfig.transform);
+
+    playerController->setWalkSpeed(activeConfig.walkSpeed);
 
     // When textures are disabled, assign visible fallback colors to geometry without vertex colors
-    if (!mapConfig.useTextures) {
+    if (!activeConfig.useTextures) {
         for (auto &it : *world) {
             if (!it.second->materials().empty()) {
                 it.second->setColor(sf::Color(160, 160, 160));
@@ -113,19 +147,19 @@ void Shooter::start() {
         }
     }
 
-    if (mapConfig.generateBonuses && server->isWorking()) {
+    if (activeConfig.generateBonuses && server->isWorking()) {
         server->generateBonuses();
     }
 
     Log::log("=== MAP DIAGNOSTICS ===");
-    Log::log("Config: path=" + mapConfig.path + " scale=" +
-             std::to_string(mapConfig.scale.x()) + "," +
-             std::to_string(mapConfig.scale.y()) + "," +
-             std::to_string(mapConfig.scale.z()) + " useTextures=" +
-             std::to_string(mapConfig.useTextures));
-    Log::log("Spawn: " + std::to_string(mapConfig.playerSpawn.x()) + " " +
-             std::to_string(mapConfig.playerSpawn.y()) + " " +
-             std::to_string(mapConfig.playerSpawn.z()));
+    Log::log("Config: path=" + activeConfig.path + " scale=" +
+             std::to_string(activeConfig.scale.x()) + "," +
+             std::to_string(activeConfig.scale.y()) + "," +
+             std::to_string(activeConfig.scale.z()) + " useTextures=" +
+             std::to_string(activeConfig.useTextures));
+    Log::log("Spawn: " + std::to_string(activeConfig.playerSpawn.x()) + " " +
+             std::to_string(activeConfig.playerSpawn.y()) + " " +
+             std::to_string(activeConfig.playerSpawn.z()));
 
     // TODO: encapsulate call backs inside Player
     player->setAddTraceCallBack([this](const Vec3D &from, const Vec3D &to) {
@@ -171,8 +205,9 @@ void Shooter::start() {
                            SoundController::loadAndPlay(SoundTag("click"), ShooterConsts::CLICK_SOUND);
                        }, "Server: " + client->serverIp().toString(), 5, 5, ShooterConsts::MAIN_MENU_GUI, {0, 66}, {0, 86}, {0, 46},
                        Consts::MEDIUM_FONT, {255, 255, 255});
-    mainMenu.addButton(screen->width() / 2, 350, 200, 20, [this]() {
-        this->player->translateToPoint(DOOM_MAP_CONFIG.playerSpawn);
+    Vec3D respawnPos = activeConfig.playerSpawn;
+    mainMenu.addButton(screen->width() / 2, 350, 200, 20, [this, respawnPos]() {
+        this->player->translateToPoint(respawnPos);
         this->player->setVelocity({});
         this->play();
         SoundController::loadAndPlay(SoundTag("click"), ShooterConsts::CLICK_SOUND);
