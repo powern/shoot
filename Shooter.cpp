@@ -12,20 +12,23 @@ struct MapConfig {
     Vec3D scale;
     Matrix4x4 transform;
     Vec3D playerSpawn;
+    bool useTextures;
 };
 
 static const MapConfig LEGACY_MAP_CONFIG{
     ShooterConsts::MAP_OBJ,
     Vec3D{5, 5, 5},
     Matrix4x4::Identity(),
-    Vec3D{0, 10, 0}
+    Vec3D{0, 10, 0},
+    false
 };
 
 static const MapConfig DOOM_MAP_CONFIG{
     ShooterConsts::DOOM_MAP_OBJ,
     Vec3D{0.03, 0.03, 0.03},
     Matrix4x4::RotationX(-Consts::PI / 2.0),
-    Vec3D{0, 1.0, 0}
+    Vec3D{0, 1.0, 0},
+    false
 };
 
 using namespace std;
@@ -91,55 +94,26 @@ void Shooter::start() {
 
     screen->setMouseCursorVisible(true);
 
-    const MapConfig &mapConfig = LEGACY_MAP_CONFIG;
+    const MapConfig &mapConfig = DOOM_MAP_CONFIG;
 
     world->loadMap(mapConfig.path, mapConfig.scale, mapConfig.transform);
+
+    // When textures are disabled, assign visible fallback colors to geometry
+    if (!mapConfig.useTextures) {
+        for (auto &it : *world) {
+            it.second->setColor(sf::Color(160, 160, 160));
+        }
+    }
 
     Log::log("=== MAP DIAGNOSTICS ===");
     Log::log("Config: path=" + mapConfig.path + " scale=" +
              std::to_string(mapConfig.scale.x()) + "," +
              std::to_string(mapConfig.scale.y()) + "," +
-             std::to_string(mapConfig.scale.z()));
+             std::to_string(mapConfig.scale.z()) + " useTextures=" +
+             std::to_string(mapConfig.useTextures));
     Log::log("Spawn: " + std::to_string(mapConfig.playerSpawn.x()) + " " +
              std::to_string(mapConfig.playerSpawn.y()) + " " +
              std::to_string(mapConfig.playerSpawn.z()));
-
-    for (auto &it : *world) {
-        Matrix4x4 M = it.second->model();
-        Vec3D lMin(1e9,1e9,1e9), lMax(-1e9,-1e9,-1e9);
-        Vec3D wMin(1e9,1e9,1e9), wMax(-1e9,-1e9,-1e9);
-        for (auto &t : it.second->triangles()) {
-            for (int k = 0; k < 3; k++) {
-                Vec3D lv(t[k].x(), t[k].y(), t[k].z());
-                if (lv.x()<lMin.x()) lMin=Vec3D(lv.x(),lMin.y(),lMin.z());
-                if (lv.y()<lMin.y()) lMin=Vec3D(lMin.x(),lv.y(),lMin.z());
-                if (lv.z()<lMin.z()) lMin=Vec3D(lMin.x(),lMin.y(),lv.z());
-                if (lv.x()>lMax.x()) lMax=Vec3D(lv.x(),lMax.y(),lMax.z());
-                if (lv.y()>lMax.y()) lMax=Vec3D(lMax.x(),lv.y(),lMax.z());
-                if (lv.z()>lMax.z()) lMax=Vec3D(lMax.x(),lMax.y(),lv.z());
-
-                Vec4D wv = M * t[k];
-                Vec3D w(wv.x(), wv.y(), wv.z());
-                if (w.x()<wMin.x()) wMin=Vec3D(w.x(),wMin.y(),wMin.z());
-                if (w.y()<wMin.y()) wMin=Vec3D(wMin.x(),w.y(),wMin.z());
-                if (w.z()<wMin.z()) wMin=Vec3D(wMin.x(),wMin.y(),w.z());
-                if (w.x()>wMax.x()) wMax=Vec3D(w.x(),wMax.y(),wMax.z());
-                if (w.y()>wMax.y()) wMax=Vec3D(wMax.x(),w.y(),wMax.z());
-                if (w.z()>wMax.z()) wMax=Vec3D(wMax.x(),wMax.y(),w.z());
-            }
-        }
-        Vec3D lSize=lMax-lMin, lCtr=(lMin+lMax)*0.5;
-        Vec3D wSize=wMax-wMin, wCtr=(wMin+wMax)*0.5;
-        Log::log("Body: " + it.first.str());
-        Log::log("  LOCAL  BB min=(" + std::to_string(lMin.x())+","+std::to_string(lMin.y())+","+std::to_string(lMin.z())+
-                 ") max=("+std::to_string(lMax.x())+","+std::to_string(lMax.y())+","+std::to_string(lMax.z())+
-                 ") size=("+std::to_string(lSize.x())+","+std::to_string(lSize.y())+","+std::to_string(lSize.z())+
-                 ") center=("+std::to_string(lCtr.x())+","+std::to_string(lCtr.y())+","+std::to_string(lCtr.z())+")");
-        Log::log("  WORLD BB min=("+std::to_string(wMin.x())+","+std::to_string(wMin.y())+","+std::to_string(wMin.z())+
-                 ") max=("+std::to_string(wMax.x())+","+std::to_string(wMax.y())+","+std::to_string(wMax.z())+
-                 ") size=("+std::to_string(wSize.x())+","+std::to_string(wSize.y())+","+std::to_string(wSize.z())+
-                 ") center=("+std::to_string(wCtr.x())+","+std::to_string(wCtr.y())+","+std::to_string(wCtr.z())+")");
-    }
 
     // TODO: encapsulate call backs inside Player
     player->setAddTraceCallBack([this](const Vec3D &from, const Vec3D &to) {
