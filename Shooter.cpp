@@ -70,7 +70,7 @@ void Shooter::start() {
 
     screen->setMouseCursorVisible(true);
 
-    world->loadMap(ShooterConsts::MAP_OBJ, Vec3D{5, 5, 5});
+    world->loadMap(ShooterConsts::MAP_OBJ, Vec3D{1, 1, 1});
 
     // TODO: encapsulate call backs inside Player
     player->setAddTraceCallBack([this](const Vec3D &from, const Vec3D &to) {
