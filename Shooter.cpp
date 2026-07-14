@@ -7,6 +7,27 @@
 #include "engine/utils/Log.h"
 #include "engine/io/SoundController.h"
 
+struct MapConfig {
+    std::string path;
+    Vec3D scale;
+    Matrix4x4 transform;
+    Vec3D playerSpawn;
+};
+
+static const MapConfig LEGACY_MAP_CONFIG{
+    ShooterConsts::MAP_OBJ,
+    Vec3D{5, 5, 5},
+    Matrix4x4::Identity(),
+    Vec3D{0, 10, 0}
+};
+
+static const MapConfig DOOM_MAP_CONFIG{
+    ShooterConsts::DOOM_MAP_OBJ,
+    Vec3D{0.03, 0.03, 0.03},
+    Matrix4x4::RotationX(-Consts::PI / 2.0),
+    Vec3D{0, 1.0, 0}
+};
+
 using namespace std;
 
 // Read server/client settings and start both.
@@ -70,7 +91,9 @@ void Shooter::start() {
 
     screen->setMouseCursorVisible(true);
 
-    world->loadMap(ShooterConsts::MAP_OBJ, Vec3D{1, 1, 1});
+    const MapConfig &mapConfig = LEGACY_MAP_CONFIG;
+
+    world->loadMap(mapConfig.path, mapConfig.scale, mapConfig.transform);
 
     // TODO: encapsulate call backs inside Player
     player->setAddTraceCallBack([this](const Vec3D &from, const Vec3D &to) {
@@ -87,7 +110,7 @@ void Shooter::start() {
 
     player->reInitWeapons();
 
-    player->translateToPoint(Vec3D{0, 10, 0});
+    player->translateToPoint(mapConfig.playerSpawn);
     camera->translateToPoint(player->position() + Vec3D{0, 1.8, 0});
     camera->translateToPoint(player->position() + Vec3D{0, 1.8, 0});
     player->attach(camera);
