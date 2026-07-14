@@ -95,7 +95,7 @@ IntersectionInformation World::rayCast(const Vec3D &from, const Vec3D &to, const
 void World::loadMap(const std::string &filename, const Vec3D &scale, const Matrix4x4 &postTransform) {
     auto objs = ResourceManager::loadObjects(filename);
     for (auto &i : objs) {
-        std::shared_ptr<RigidBody> obj = std::make_shared<RigidBody>(*i, false);
+        std::shared_ptr<RigidBody> obj = std::make_shared<RigidBody>(*i, true);
         addBody(obj);
         obj->scale(scale);
         obj->transform(postTransform);
