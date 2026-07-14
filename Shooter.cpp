@@ -150,7 +150,7 @@ void Shooter::start() {
     auto floorHit = world->rayCast(
         Vec3D{configuredSpawn.x(), mapMax.y() + margin, configuredSpawn.z()},
         Vec3D{configuredSpawn.x(), mapMin.y() - margin, configuredSpawn.z()},
-        "", false);
+        "", true);
 
     Log::log("=== SPAWN VALIDATION ===");
     Log::log("  configured=(" + std::to_string(configuredSpawn.x()) + "," + std::to_string(configuredSpawn.y()) + "," + std::to_string(configuredSpawn.z()) + ")");
