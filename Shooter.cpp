@@ -284,6 +284,18 @@ void Shooter::update() {
     if (inGame) {
         screen->setTitle(ShooterConsts::PROJECT_NAME);
 
+        { // Log player position every ~1 second
+            static double posLogTimer = 0;
+            posLogTimer += Time::deltaTime();
+            if (posLogTimer >= 1.0) {
+                posLogTimer = 0;
+                Log::log("PLAYER pos: " + std::to_string(player->position().x()) + " " +
+                         std::to_string(player->position().y()) + " " + std::to_string(player->position().z()) +
+                         " vel: " + std::to_string(player->velocity().x()) + " " +
+                         std::to_string(player->velocity().y()) + " " + std::to_string(player->velocity().z()));
+            }
+        }
+
         if (_debugRotate) {
             _debugRotateFrame++;
             if (_debugRotateFrame * 0.003 > 0.5236) {
