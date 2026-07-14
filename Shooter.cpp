@@ -362,6 +362,18 @@ void Shooter::update() {
             }
         } else {
             playerController->update();
+
+            // Floor clamping: raycast downward to find floor height
+            Vec3D from = player->position();
+            Vec3D to = from - Vec3D{0, 500, 0};
+            auto hit = world->rayCast(from, to, "Player Weapon fireTrace bulletHole");
+            if (hit.intersected) {
+                double floorY = hit.pointOfIntersection.y();
+                if (player->position().y() < floorY + 0.5) {
+                    player->translateToPoint(Vec3D{player->position().x(), floorY + 0.5, player->position().z()});
+                    player->setVelocity(Vec3D{player->velocity().x(), 0, player->velocity().z()});
+                }
+            }
         }
     } else {
         mainMenu.update();
