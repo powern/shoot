@@ -165,6 +165,7 @@ std::vector<std::shared_ptr<Mesh>> ResourceManager::loadObjects(const std::strin
     std::vector<Material> materials;
     std::string currentMtlName;
     int currentMtlIndex = -1;
+    sf::Color _currentFaceColor(255, 255, 255);
     std::string basePath = std::filesystem::path(filename).parent_path().string();
 
     // Load MTL if referenced
@@ -290,10 +291,8 @@ std::vector<std::shared_ptr<Mesh>> ResourceManager::loadObjects(const std::strin
             // Triangulate: for convex polygons, use triangle fan
             size_t n = vIdx.size();
             if (n >= 3) {
-                sf::Color faceColor(255, 255, 255);
-                if (currentMtlIndex < 0 || currentMtlIndex >= (int)materials.size()) {
-                    // Try custom material from 'g' line (backward compat)
-                } else {
+                sf::Color faceColor = _currentFaceColor;
+                if (currentMtlIndex >= 0 && currentMtlIndex < (int)materials.size()) {
                     faceColor = materials[currentMtlIndex].color;
                 }
 
@@ -330,7 +329,7 @@ std::vector<std::shared_ptr<Mesh>> ResourceManager::loadObjects(const std::strin
         }
 
         if (first == 'g') {
-            // Group - handle old format material assignment
+            // Group - old format: set current face color from maters
             std::string skip; s >> skip; // consume 'g'
             std::string matInfo;
             s >> matInfo;
@@ -338,24 +337,10 @@ std::vector<std::shared_ptr<Mesh>> ResourceManager::loadObjects(const std::strin
                 std::string colorKey = matInfo.substr(matInfo.size() - 3, 3);
                 auto matIt = maters.find(colorKey);
                 if (matIt != maters.end()) {
-                    // Old format: try to find or create a material
-                    bool found = false;
-                    for (auto &m : materials) {
-                        if (m.name == colorKey) {
-                            currentMtlIndex = static_cast<int>(&m - &materials[0]);
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        Material mat;
-                        mat.name = colorKey;
-                        mat.color = matIt->second;
-                        currentMtlIndex = static_cast<int>(materials.size());
-                        materials.push_back(mat);
-                    }
+                    _currentFaceColor = matIt->second;
                 }
             }
+            currentMtlIndex = -1;
             continue;
         }
 

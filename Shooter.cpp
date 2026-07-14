@@ -70,31 +70,7 @@ void Shooter::start() {
 
     screen->setMouseCursorVisible(true);
 
-    world->loadMap(ShooterConsts::DOOM_MAP_OBJ, Vec3D{0.03, 0.03, 0.03},
-                   Matrix4x4::RotationX(-Consts::PI/2.0));
-
-    // Compute bounding box
-    Vec3D bbMin(1e9, 1e9, 1e9), bbMax(-1e9, -1e9, -1e9);
-    for (auto &it : *world) {
-        for (auto &t : it.second->triangles()) {
-            for (int k = 0; k < 3; k++) {
-                Vec3D v(t[k].x(), t[k].y(), t[k].z());
-                if (v.x() < bbMin.x()) bbMin = Vec3D(v.x(), bbMin.y(), bbMin.z());
-                if (v.y() < bbMin.y()) bbMin = Vec3D(bbMin.x(), v.y(), bbMin.z());
-                if (v.z() < bbMin.z()) bbMin = Vec3D(bbMin.x(), bbMin.y(), v.z());
-                if (v.x() > bbMax.x()) bbMax = Vec3D(v.x(), bbMax.y(), bbMax.z());
-                if (v.y() > bbMax.y()) bbMax = Vec3D(bbMax.x(), v.y(), bbMax.z());
-                if (v.z() > bbMax.z()) bbMax = Vec3D(bbMax.x(), bbMax.y(), v.z());
-            }
-        }
-    }
-    Vec3D bbSize = bbMax - bbMin;
-    Vec3D bbCenter = (bbMin + bbMax) * 0.5;
-    Log::log("=== MAP BB (local space) ===");
-    Log::log("  min: " + std::to_string(bbMin.x()) + " " + std::to_string(bbMin.y()) + " " + std::to_string(bbMin.z()));
-    Log::log("  max: " + std::to_string(bbMax.x()) + " " + std::to_string(bbMax.y()) + " " + std::to_string(bbMax.z()));
-    Log::log("  size: " + std::to_string(bbSize.x()) + " " + std::to_string(bbSize.y()) + " " + std::to_string(bbSize.z()));
-    Log::log("  center: " + std::to_string(bbCenter.x()) + " " + std::to_string(bbCenter.y()) + " " + std::to_string(bbCenter.z()));
+    world->loadMap(ShooterConsts::MAP_OBJ, Vec3D{5, 5, 5});
 
     // TODO: encapsulate call backs inside Player
     player->setAddTraceCallBack([this](const Vec3D &from, const Vec3D &to) {
@@ -111,7 +87,7 @@ void Shooter::start() {
 
     player->reInitWeapons();
 
-    player->translateToPoint(Vec3D{bbCenter.x(), bbMax.y() + 5.0, bbCenter.z()});
+    player->translateToPoint(Vec3D{0, 10, 0});
     camera->translateToPoint(player->position() + Vec3D{0, 1.8, 0});
     camera->translateToPoint(player->position() + Vec3D{0, 1.8, 0});
     player->attach(camera);
