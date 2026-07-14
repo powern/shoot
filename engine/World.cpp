@@ -100,7 +100,6 @@ void World::loadMap(const std::string &filename, const Vec3D &scale, const Matri
         obj->scale(scale);
         obj->transform(postTransform);
         obj->setStatic(true);
-        obj->setCollider(false);
     }
 }
 
