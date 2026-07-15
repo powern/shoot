@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 01.11.2021.
-//
-
 #ifndef SHOOTER_AROTATELEFT_H
 #define SHOOTER_AROTATELEFT_H
 

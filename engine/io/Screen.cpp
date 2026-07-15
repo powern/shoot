@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 14.01.2021.
-//
-
 #include <utility>
 #include <cmath>
 
@@ -210,13 +206,18 @@ void Screen::prepareToGlDrawMesh() {
     // Configure the viewport (the same size as the window)
     glViewport(0, 0, _window->getSize().x, _window->getSize().y);
 
-    // Setup a perspective projection
+    // Setup a perspective projection with correct FOV
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     GLfloat ratio = static_cast<float>(_window->getSize().x) / _window->getSize().y;
-    glFrustum(-ratio, ratio, -1.f, 1.f, 1.0f, 500.f);
+    GLfloat nearPlane = 0.01f;
+    GLfloat farPlane = 5000.0f;
+    GLfloat fovYRadians = 90.0f * Consts::PI / 180.0f;
+    GLfloat top = nearPlane * std::tan(fovYRadians * 0.5f);
+    GLfloat right = top * ratio;
+    glFrustum(-right, right, -top, top, nearPlane, farPlane);
 
-    // Enable position and texture coordinates vertex components
+    // Enable position and color components
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
 
@@ -239,5 +240,56 @@ void Screen::glDrawMesh(GLfloat* geometry, GLfloat* view, GLfloat* model, size_t
     glMultMatrixf(model);
 
     // Draw the mesh
+    glDrawArrays(GL_TRIANGLES, 0, count);
+}
+
+void Screen::prepareToGlDrawTexturedMesh() {
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glClearDepth(1.f);
+    glDepthFunc(GL_LESS);
+
+    glDisable(GL_LIGHTING);
+    glEnable(GL_TEXTURE_2D);
+
+    glViewport(0, 0, _window->getSize().x, _window->getSize().y);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    GLfloat ratio = static_cast<float>(_window->getSize().x) / _window->getSize().y;
+    GLfloat nearPlane = 0.01f;
+    GLfloat farPlane = 5000.0f;
+    GLfloat fovYRadians = 90.0f * Consts::PI / 180.0f;
+    GLfloat top = nearPlane * std::tan(fovYRadians * 0.5f);
+    GLfloat right = top * ratio;
+    glFrustum(-right, right, -top, top, nearPlane, farPlane);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
+
+    glMatrixMode(GL_MODELVIEW);
+}
+
+void Screen::glDrawTexturedMesh(GLfloat* geometry, GLfloat* view, GLfloat* model, size_t count,
+                                 const sf::Texture *texture) {
+    glVertexPointer(3, GL_FLOAT, 5 * sizeof(GLfloat), geometry);
+    glTexCoordPointer(2, GL_FLOAT, 5 * sizeof(GLfloat), geometry + 3);
+
+    if (texture != nullptr) {
+        sf::Texture::bind(texture);
+    } else {
+        sf::Texture::bind(nullptr);
+    }
+
+    glLoadIdentity();
+    glLoadMatrixf(view);
+    glMultMatrixf(model);
+
     glDrawArrays(GL_TRIANGLES, 0, count);
 }

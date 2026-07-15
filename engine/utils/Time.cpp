@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 11.01.2021.
-//
-
 #include "Time.h"
 #include "Log.h"
 #include "../Consts.h"

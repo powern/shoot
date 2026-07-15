@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 09.10.2021.
-//
-
 #ifndef SHOOTER_VEC3D_H
 #define SHOOTER_VEC3D_H
 

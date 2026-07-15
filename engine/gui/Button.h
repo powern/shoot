@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 26.03.2021.
-//
-
 #ifndef ENGINE_BUTTON_H
 #define ENGINE_BUTTON_H
 

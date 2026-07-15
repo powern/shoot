@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 25.05.2021.
-//
-
 #ifndef SHOOTER_SHOOTERSERVER_H
 #define SHOOTER_SHOOTERSERVER_H
 

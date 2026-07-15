@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 26.03.2021.
-//
-
 #include <utility>
 
 #include "Button.h"

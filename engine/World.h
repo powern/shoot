@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 13.01.2021.
-//
-
 #ifndef ENGINE_WORLD_H
 #define ENGINE_WORLD_H
 
@@ -13,6 +9,7 @@
 #include "Camera.h"
 #include "io/Screen.h"
 #include "physics/RigidBody.h"
+#include "physics/CollisionGrid.h"
 
 struct IntersectionInformation final {
     const Vec3D pointOfIntersection;
@@ -64,15 +61,22 @@ public:
     std::shared_ptr<RigidBody> body(const ObjectNameTag &tag);
     void removeBody(const ObjectNameTag &tag);
     std::shared_ptr<RigidBody> loadBody(const ObjectNameTag &tag, const std::string &filename, const Vec3D &scale = Vec3D{1, 1, 1});
-    void loadMap(const std::string &filename, const Vec3D &scale = Vec3D{1, 1, 1});
+    void loadMap(const std::string &filename, const Vec3D &scale = Vec3D{1, 1, 1},
+                 const Matrix4x4 &postTransform = Matrix4x4::Identity());
 
     // std::string skipTags is a string that consist of all objects we want to skip in ray casting
-    IntersectionInformation rayCast(const Vec3D &from, const Vec3D &to, const std::string &skipTags = "");
+    IntersectionInformation rayCast(const Vec3D &from, const Vec3D &to, const std::string &skipTags = "",
+                                    bool cullBackFaces = true);
 
     std::map<ObjectNameTag, std::shared_ptr<RigidBody>>::iterator begin() { return _objects.begin(); }
     std::map<ObjectNameTag, std::shared_ptr<RigidBody>>::iterator end() { return _objects.end(); }
 
     void stepPhysics(double dt);
+
+    // Collision grid for map geometry
+    CollisionGrid collisionGrid;
+    void buildCollisionGrid();
+    Vec3D resolveCollision(const Vec3D &pos, double radius) const;
 };
 
 

@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 07.10.2021.
-//
-
 #ifndef SHOOTER_CONSTS_H
 #define SHOOTER_CONSTS_H
 
@@ -36,7 +32,7 @@ namespace Consts {
     // Physics constants
     const double PHYSICS_FIXED_DT = 1.0 / 60.0;
     const double PHYSICS_MAX_SUBSTEPS = 8;
-    const double PHYSICS_GRID_SIZE = 10.0;
+    const double PHYSICS_GRID_SIZE = 100.0;
     const double DEFAULT_RESTITUTION = 0.05;
     const double DEFAULT_FRICTION = 0.4;
     const double DEFAULT_MASS = 1.0;

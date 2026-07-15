@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 13.01.2021.
-//
-
 #ifndef ENGINE_MESH_H
 #define ENGINE_MESH_H
 
@@ -12,10 +8,12 @@
 
 #include "Triangle.h"
 #include "Object.h"
+#include "Material.h"
 
 class Mesh : public Object {
 private:
     std::vector<Triangle> _tris;
+    std::vector<Material> _materials;
     sf::Color _color = sf::Color(255, 245, 194);
     bool _visible = true;
     double _boundingRadius = 0;
@@ -26,6 +24,7 @@ private:
 
     // OpenGL
     mutable GLfloat* _geometry = nullptr;
+    mutable GLfloat* _texGeometry = nullptr;
 public:
     explicit Mesh(ObjectNameTag nameTag) : Object(std::move(nameTag)) {};
 
@@ -36,7 +35,12 @@ public:
 
     Mesh &operator=(const Mesh &mesh) = delete;
 
-    Mesh(const Mesh &mesh) = default;
+    Mesh(const Mesh &mesh) : Object(mesh),
+                             _tris(mesh._tris),
+                             _materials(mesh._materials),
+                             _color(mesh._color),
+                             _visible(mesh._visible),
+                             _boundingRadius(mesh._boundingRadius) {};
 
     explicit Mesh(ObjectNameTag nameTag, const std::vector<Triangle> &tries);
 
@@ -45,6 +49,8 @@ public:
     void loadObj(const std::string &filename, const Vec3D &scale = Vec3D{1, 1, 1});
 
     [[nodiscard]] std::vector<Triangle> const &triangles() const { return _tris; }
+
+    [[nodiscard]] std::vector<Material>& materials() { return _materials; }
 
     void setTriangles(std::vector<Triangle>&& t);
 
@@ -62,6 +68,8 @@ public:
 
     [[nodiscard]] bool isVisible() const { return _visible; }
 
+    [[nodiscard]] bool hasTextures() const;
+
     ~Mesh() override;
 
     Mesh static Cube(ObjectNameTag tag, double size = 1.0, sf::Color color = sf::Color(0,0,0));
@@ -73,6 +81,7 @@ public:
 
     // OpenGL functions
     GLfloat *glFloatArray() const;
+    GLfloat *glTexFloatArray() const;
     void glFreeFloatArray();
 };
 

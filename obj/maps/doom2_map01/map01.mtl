@@ -1,0 +1,198 @@
+newmtl assembled_textures-ASHWALL3
+map_Kd textures/assembled_textures/ASHWALL3.png
+
+newmtl assembled_textures-BIGDOOR1
+map_Kd textures/assembled_textures/BIGDOOR1.png
+
+newmtl assembled_textures-BRNSMAL1
+map_Kd textures/assembled_textures/BRNSMAL1.png
+
+newmtl assembled_textures-BRONZE1
+map_Kd textures/assembled_textures/BRONZE1.png
+
+newmtl assembled_textures-BRONZE2
+map_Kd textures/assembled_textures/BRONZE2.png
+
+newmtl assembled_textures-BROVINE2
+map_Kd textures/assembled_textures/BROVINE2.png
+
+newmtl assembled_textures-BROWN1
+map_Kd textures/assembled_textures/BROWN1.png
+
+newmtl assembled_textures-BROWN96
+map_Kd textures/assembled_textures/BROWN96.png
+
+newmtl assembled_textures-BROWNGRN
+map_Kd textures/assembled_textures/BROWNGRN.png
+
+newmtl assembled_textures-BROWNHUG
+map_Kd textures/assembled_textures/BROWNHUG.png
+
+newmtl assembled_textures-CEMENT9
+map_Kd textures/assembled_textures/CEMENT9.png
+
+newmtl assembled_textures-COMPSPAN
+map_Kd textures/assembled_textures/COMPSPAN.png
+
+newmtl assembled_textures-COMPWERD
+map_Kd textures/assembled_textures/COMPWERD.png
+
+newmtl assembled_textures-EXITDOOR
+map_Kd textures/assembled_textures/EXITDOOR.png
+
+newmtl assembled_textures-EXITSIGN
+map_Kd textures/assembled_textures/EXITSIGN.png
+
+newmtl assembled_textures-LITE5
+map_Kd textures/assembled_textures/LITE5.png
+
+newmtl assembled_textures-MIDBARS3
+map_Kd textures/assembled_textures/MIDBARS3.png
+
+newmtl assembled_textures-MODWALL2
+map_Kd textures/assembled_textures/MODWALL2.png
+
+newmtl assembled_textures-MODWALL3
+map_Kd textures/assembled_textures/MODWALL3.png
+
+newmtl assembled_textures-PIPE2
+map_Kd textures/assembled_textures/PIPE2.png
+
+newmtl assembled_textures-PIPE4
+map_Kd textures/assembled_textures/PIPE4.png
+
+newmtl assembled_textures-SPACEW3
+map_Kd textures/assembled_textures/SPACEW3.png
+
+newmtl assembled_textures-SPACEW4
+map_Kd textures/assembled_textures/SPACEW4.png
+
+newmtl assembled_textures-STEP2
+map_Kd textures/assembled_textures/STEP2.png
+
+newmtl assembled_textures-STEP6
+map_Kd textures/assembled_textures/STEP6.png
+
+newmtl assembled_textures-SUPPORT2
+map_Kd textures/assembled_textures/SUPPORT2.png
+
+newmtl assembled_textures-SW1BRCOM
+map_Kd textures/assembled_textures/SW1BRCOM.png
+
+newmtl assembled_textures-SW1BRNGN
+map_Kd textures/assembled_textures/SW1BRNGN.png
+
+newmtl assembled_textures-SW1COMP
+map_Kd textures/assembled_textures/SW1COMP.png
+
+newmtl assembled_textures-SW2BRCOM
+map_Kd textures/assembled_textures/SW2BRCOM.png
+
+newmtl assembled_textures-TEKGREN1
+map_Kd textures/assembled_textures/TEKGREN1.png
+
+newmtl assembled_textures-TEKGREN2
+map_Kd textures/assembled_textures/TEKGREN2.png
+
+newmtl assembled_textures-TEKGREN3
+map_Kd textures/assembled_textures/TEKGREN3.png
+
+newmtl assembled_textures-TEKGREN4
+map_Kd textures/assembled_textures/TEKGREN4.png
+
+newmtl assembled_textures-TEKGREN5
+map_Kd textures/assembled_textures/TEKGREN5.png
+
+newmtl assembled_textures-TEKWALL6
+map_Kd textures/assembled_textures/TEKWALL6.png
+
+newmtl flats-CEIL1_2
+map_Kd textures/flats/CEIL1_2.png
+
+newmtl flats-CEIL1_3
+map_Kd textures/flats/CEIL1_3.png
+
+newmtl flats-CEIL3_1
+map_Kd textures/flats/CEIL3_1.png
+
+newmtl flats-CEIL3_3
+map_Kd textures/flats/CEIL3_3.png
+
+newmtl flats-CEIL5_1
+map_Kd textures/flats/CEIL5_1.png
+
+newmtl flats-CEIL5_2
+map_Kd textures/flats/CEIL5_2.png
+
+newmtl flats-FLAT10
+map_Kd textures/flats/FLAT10.png
+
+newmtl flats-FLAT18
+map_Kd textures/flats/FLAT18.png
+
+newmtl flats-FLAT1_1
+map_Kd textures/flats/FLAT1_1.png
+
+newmtl flats-FLAT1_2
+map_Kd textures/flats/FLAT1_2.png
+
+newmtl flats-FLAT2
+map_Kd textures/flats/FLAT2.png
+
+newmtl flats-FLAT20
+map_Kd textures/flats/FLAT20.png
+
+newmtl flats-FLAT23
+map_Kd textures/flats/FLAT23.png
+
+newmtl flats-FLAT4
+map_Kd textures/flats/FLAT4.png
+
+newmtl flats-FLAT5
+map_Kd textures/flats/FLAT5.png
+
+newmtl flats-FLAT5_5
+map_Kd textures/flats/FLAT5_5.png
+
+newmtl flats-FLOOR0_1
+map_Kd textures/flats/FLOOR0_1.png
+
+newmtl flats-FLOOR0_2
+map_Kd textures/flats/FLOOR0_2.png
+
+newmtl flats-FLOOR1_1
+map_Kd textures/flats/FLOOR1_1.png
+
+newmtl flats-FLOOR3_3
+map_Kd textures/flats/FLOOR3_3.png
+
+newmtl flats-FLOOR4_1
+map_Kd textures/flats/FLOOR4_1.png
+
+newmtl flats-FLOOR5_3
+map_Kd textures/flats/FLOOR5_3.png
+
+newmtl flats-FLOOR5_4
+map_Kd textures/flats/FLOOR5_4.png
+
+newmtl flats-FLOOR7_1
+map_Kd textures/flats/FLOOR7_1.png
+
+newmtl flats-FWATER4
+map_Kd textures/flats/FWATER4.png
+
+newmtl flats-GRASS1
+map_Kd textures/flats/GRASS1.png
+
+newmtl flats-GRNLITE1
+map_Kd textures/flats/GRNLITE1.png
+
+newmtl flats-MFLR8_3
+map_Kd textures/flats/MFLR8_3.png
+
+newmtl flats-RROCK09
+map_Kd textures/flats/RROCK09.png
+
+newmtl flats-TLITE6_4
+map_Kd textures/flats/TLITE6_4.png
+

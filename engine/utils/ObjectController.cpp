@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 22.01.2022.
-//
-
 #include "ObjectController.h"
 #include "Time.h"
 #include "../math/Vec2D.h"

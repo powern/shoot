@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 05.02.2021.
-//
-
 #ifndef ENGINE_RIGIDBODY_H
 #define ENGINE_RIGIDBODY_H
 

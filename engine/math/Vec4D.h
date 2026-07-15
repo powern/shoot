@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 12.01.2021.
-//
-
 #ifndef ENGINE_POINT4D_H
 #define ENGINE_POINT4D_H
 

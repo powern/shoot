@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 19.09.2021.
-//
-
 #include "PlayerController.h"
 #include "../engine/utils/Log.h"
 #include "../engine/animation/Animations.h"
@@ -113,13 +109,13 @@ void PlayerController::update() {
     // Left and right
 
     if (Keyboard::isKeyPressed(sf::Keyboard::A)) {
-        _player->translate(_player->left() * Time::deltaTime() * ShooterConsts::WALK_SPEED * coeff);
+        _player->translate(_player->left() * Time::deltaTime() * _walkSpeed * coeff);
         if (_player->inCollision()) {
             _player->setVelocity(Vec3D{0, 0, 0});
         }
     }
     if (Keyboard::isKeyPressed(sf::Keyboard::D)) {
-        _player->translate(-_player->left() * Time::deltaTime() * ShooterConsts::WALK_SPEED * coeff);
+        _player->translate(-_player->left() * Time::deltaTime() * _walkSpeed * coeff);
         if (_player->inCollision()) {
             _player->setVelocity(Vec3D{0, 0, 0});
         }
@@ -127,14 +123,14 @@ void PlayerController::update() {
 
     // Forward and backward
     if (Keyboard::isKeyPressed(sf::Keyboard::W)) {
-        _player->translate(_player->lookAt() * Time::deltaTime() * ShooterConsts::WALK_SPEED * coeff);
+        _player->translate(_player->lookAt() * Time::deltaTime() * _walkSpeed * coeff);
         if (_player->inCollision()) {
             _player->setVelocity(Vec3D{0, 0, 0});
         }
     }
 
     if (Keyboard::isKeyPressed(sf::Keyboard::S)) {
-        _player->translate(-_player->lookAt() * Time::deltaTime() * ShooterConsts::WALK_SPEED * coeff);
+        _player->translate(-_player->lookAt() * Time::deltaTime() * _walkSpeed * coeff);
 
         if (_player->inCollision()) {
             _player->setVelocity(Vec3D{0, 0, 0});
@@ -181,7 +177,7 @@ void PlayerController::update() {
                                           sqrt(2 * -_player->acceleration().y() * ShooterConsts::JUMP_HEIGHT) * coeff *
                                           Time::deltaTime() * 60, 0});
         }
-        _player->translate(Vec3D{0, Time::deltaTime() * ShooterConsts::WALK_SPEED * 2 * coeff, 0});
+        _player->translate(Vec3D{0, Time::deltaTime() * _walkSpeed * 2 * coeff, 0});
 
         //_player->setVelocity(Vec3D{_player->velocity().x(), sqrt(2 * -_player->acceleration().y() * ShooterConsts::JUMP_HEIGHT) * coeff,_player->velocity().z()});
         _isSliding = true;

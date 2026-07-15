@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 22.01.2022.
-//
-
 #ifndef SHOOTER_OBJECTCONTROLLER_H
 #define SHOOTER_OBJECTCONTROLLER_H
 

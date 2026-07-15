@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 01.06.2021.
-//
-
 #ifndef SHOOTER_WEAPON_H
 #define SHOOTER_WEAPON_H
 

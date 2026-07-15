@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 17.10.2021.
-//
-
 #include "SoundController.h"
 #include "../utils/ResourceManager.h"
 #include "../utils/Log.h"

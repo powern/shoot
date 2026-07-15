@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 13.01.2021.
-//
-
 #ifndef ENGINE_LOG_H
 #define ENGINE_LOG_H
 

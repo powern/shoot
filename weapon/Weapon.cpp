@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 01.06.2021.
-//
-
 #include "Weapon.h"
 #include "../engine/utils/ResourceManager.h"
 #include "../engine/utils/Log.h"

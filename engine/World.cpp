@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 13.01.2021.
-//
-
 #include <sstream>
 #include <cmath>
 #include <unordered_set>
@@ -28,7 +24,8 @@ std::shared_ptr<RigidBody> World::loadBody(const ObjectNameTag &tag, const strin
     return _objects[tag];
 }
 
-IntersectionInformation World::rayCast(const Vec3D &from, const Vec3D &to, const std::string &skipTags) {
+IntersectionInformation World::rayCast(const Vec3D &from, const Vec3D &to, const std::string &skipTags,
+                                        bool cullBackFaces) {
 
     // make vector of tags, that we are going to escape
     vector<std::string> tagsToSkip;
@@ -42,7 +39,7 @@ IntersectionInformation World::rayCast(const Vec3D &from, const Vec3D &to, const
     Vec3D point{};
     Triangle triangle;
     std::string bodyName;
-    double minDistance = Consts::RAY_CAST_MAX_DISTANCE;
+    double minDistance = Consts::RAY_CAST_MAX_DISTANCE * Consts::RAY_CAST_MAX_DISTANCE;
     std::shared_ptr<RigidBody> intersectedBody = nullptr;
 
     for (auto&[name, body]  : _objects) {
@@ -59,32 +56,27 @@ IntersectionInformation World::rayCast(const Vec3D &from, const Vec3D &to, const
         }
 
         Matrix4x4 model = body->model();
-        Matrix4x4 invModel = body->invModel();
-
-        Vec3D v = (to - from).normalized();
-        Vec3D v_model = invModel*v;
-        Vec3D from_model = invModel*(from - body->position());
-        Vec3D to_model = invModel*(to - body->position());
-
 
         for (auto &tri : body->triangles()) {
 
-            if(tri.norm().dot(v_model) > 0) {
-                continue;
+            Triangle worldTri(model * tri[0], model * tri[1], model * tri[2], tri.color());
+
+            if (cullBackFaces) {
+                Vec3D v = (to - from).normalized();
+                if (worldTri.norm().dot(v) > 0) {
+                    continue;
+                }
             }
 
-            auto intersection = Plane(tri).intersection(from_model, to_model);
+            auto plane = Plane(worldTri);
+            auto intersection = plane.intersection(from, to);
 
-            if (intersection.second > 0 && tri.isPointInside(intersection.first)) {
-
-                Triangle globalTriangle(model * tri[0], model * tri[1], model * tri[2], tri.color());
-                auto globalIntersection = Plane(globalTriangle).intersection(from, to);
-                double globalDistance = (globalIntersection.first - from).abs();
-
-                if(globalDistance < minDistance) {
-                    minDistance = globalDistance;
-                    point = globalIntersection.first;
-                    triangle = globalTriangle;
+            if (intersection.second > 0 && worldTri.isPointInside(intersection.first)) {
+                double distSq = (intersection.first - from).sqrAbs();
+                if (distSq < minDistance && distSq > Consts::EPS) {
+                    minDistance = distSq;
+                    point = intersection.first;
+                    triangle = worldTri;
                     bodyName = name.str();
                     intersected = true;
                     intersectedBody = body;
@@ -96,13 +88,21 @@ IntersectionInformation World::rayCast(const Vec3D &from, const Vec3D &to, const
     return IntersectionInformation{point, sqrt(minDistance), triangle, ObjectNameTag(bodyName), intersectedBody, intersected};
 }
 
-void World::loadMap(const std::string &filename, const Vec3D &scale) {
+void World::loadMap(const std::string &filename, const Vec3D &scale, const Matrix4x4 &postTransform) {
     auto objs = ResourceManager::loadObjects(filename);
     for (auto &i : objs) {
         std::shared_ptr<RigidBody> obj = std::make_shared<RigidBody>(*i, false);
         addBody(obj);
         obj->scale(scale);
+        obj->transform(postTransform);
         obj->setStatic(true);
+        obj->setCollider(false);
+        // Build collision grid from map triangles
+        for (auto &t : i->triangles()) {
+            Matrix4x4 M = obj->model();
+            Triangle wt(M * t[0], M * t[1], M * t[2], t.color());
+            collisionGrid.addTriangle(wt);
+        }
     }
 }
 
@@ -260,6 +260,42 @@ void World::stepPhysics(double dt) {
 
 void World::update() {
     stepPhysics(Time::deltaTime());
+}
+
+void World::buildCollisionGrid() {
+    collisionGrid.clear();
+    for (auto &[name, body] : _objects) {
+        if (!body->isStatic()) continue;
+        Matrix4x4 M = body->model();
+        for (auto &t : body->triangles()) {
+            Triangle wt(M * t[0], M * t[1], M * t[2], t.color());
+            collisionGrid.addTriangle(wt);
+        }
+    }
+}
+
+Vec3D World::resolveCollision(const Vec3D &pos, double radius) const {
+    auto tris = collisionGrid.querySphere(pos, radius);
+    Vec3D result = pos;
+    for (auto *tri : tris) {
+        // Closest point on triangle to position
+        Vec3D p0(tri->operator[](0).x(), tri->operator[](0).y(), tri->operator[](0).z());
+        Vec3D p1(tri->operator[](1).x(), tri->operator[](1).y(), tri->operator[](1).z());
+        Vec3D p2(tri->operator[](2).x(), tri->operator[](2).y(), tri->operator[](2).z());
+
+        // Find closest point on triangle to player pos (simple: project onto plane, clamp to edges)
+        Vec3D normal = tri->norm();
+        double dist = normal.dot(pos - p0);
+        if (dist < radius && dist > -radius) {
+            // Push player out of the triangle
+            if (dist > 0) {
+                result = result + normal * (radius - dist);
+            } else {
+                result = result - normal * (radius + dist);
+            }
+        }
+    }
+    return result;
 }
 
 std::shared_ptr<RigidBody> World::body(const ObjectNameTag &tag) {

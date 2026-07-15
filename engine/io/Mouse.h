@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 19.09.2021.
-//
-
 #ifndef SHOOTER_MOUSE_H
 #define SHOOTER_MOUSE_H
 

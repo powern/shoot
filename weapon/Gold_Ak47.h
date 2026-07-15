@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 05.06.2021.
-//
-
 #ifndef SHOOTER_GOLD_AK47_H
 #define SHOOTER_GOLD_AK47_H
 

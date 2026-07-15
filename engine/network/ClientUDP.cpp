@@ -1,7 +1,3 @@
-//
-// Created by Neirokan on 30.04.2020
-//
-
 #include "ClientUDP.h"
 #include "MsgType.h"
 #include "../utils/Time.h"

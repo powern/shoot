@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 14.01.2021.
-//
-
 #ifndef ENGINE_SCREEN_H
 #define ENGINE_SCREEN_H
 
@@ -70,8 +66,11 @@ public:
 
     // OpenGL functions
     void prepareToGlDrawMesh();
-    
     void glDrawMesh(GLfloat *geometry, GLfloat *view, GLfloat *model, size_t count);
+
+    void prepareToGlDrawTexturedMesh();
+    void glDrawTexturedMesh(GLfloat *geometry, GLfloat *view, GLfloat *model, size_t count,
+                            const sf::Texture *texture);
 
     [[nodiscard]] std::shared_ptr<sf::RenderWindow> renderWindow() { return _window; }
 

@@ -1,7 +1,3 @@
-//
-// Created by Neirokan on 09.05.2020
-//
-
 #ifndef ENGINE_RESOURCEMANAGER_H
 #define ENGINE_RESOURCEMANAGER_H
 
@@ -11,6 +7,7 @@
 #include <SFML/Audio.hpp>
 
 #include "../Mesh.h"
+#include "../Material.h"
 
 class ResourceManager final {
 private:
@@ -47,6 +44,8 @@ public:
     // If success returns pointer to texture.
     // Otherwise returns nullptr.
     static std::vector<std::shared_ptr<Mesh>> loadObjects(const std::string &filename);
+
+    static std::vector<Material> loadMTL(const std::string &filename, const std::string &basePath);
 
     static std::shared_ptr<sf::Texture> loadTexture(const std::string &filename);
 

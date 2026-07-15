@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 29.01.2021.
-//
-
 #ifndef ENGINE_ASCALE_H
 #define ENGINE_ASCALE_H
 

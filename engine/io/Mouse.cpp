@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 19.09.2021.
-//
-
 #include "Mouse.h"
 #include "../utils/Time.h"
 #include "../Consts.h"

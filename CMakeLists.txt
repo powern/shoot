@@ -52,6 +52,8 @@ add_executable(${CMAKE_PROJECT_NAME}
         engine/utils/Timer.h
         engine/utils/ResourceManager.h
         engine/utils/ResourceManager.cpp
+        engine/utils/Config.h
+        engine/utils/Config.cpp
         engine/World.h
         engine/World.cpp
         engine/Camera.h
@@ -90,6 +92,8 @@ add_executable(${CMAKE_PROJECT_NAME}
         engine/physics/RigidBody.cpp
         engine/physics/RigidBody.h
         engine/physics/Simplex.h
+        engine/physics/CollisionGrid.cpp
+        engine/physics/CollisionGrid.h
         engine/physics/HitBox.cpp
         engine/physics/HitBox.h
         engine/Object.cpp

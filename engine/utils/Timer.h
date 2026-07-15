@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 03.11.2021.
-//
-
 #ifndef SHOOTER_TIMER_H
 #define SHOOTER_TIMER_H
 

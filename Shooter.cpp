@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 22.09.2021.
-//
-
 #include "Shooter.h"
 #include <fstream>
 #include <utility>
@@ -9,7 +5,38 @@
 #include "engine/animation/Animations.h"
 #include "ShooterConsts.h"
 #include "engine/utils/Log.h"
+#include "engine/utils/Config.h"
 #include "engine/io/SoundController.h"
+
+struct MapConfig {
+    std::string path;
+    Vec3D scale;
+    Matrix4x4 transform;
+    Vec3D playerSpawn;
+    bool useTextures;
+    bool generateBonuses;
+    double walkSpeed;
+};
+
+static const MapConfig LEGACY_MAP_CONFIG{
+    ShooterConsts::MAP_OBJ,
+    Vec3D{5, 5, 5},
+    Matrix4x4::Identity(),
+    Vec3D{0, 10, 0},
+    false,
+    true,
+    ShooterConsts::WALK_SPEED
+};
+
+static const MapConfig DOOM_MAP_CONFIG{
+    ShooterConsts::DOOM_MAP_OBJ,
+    Vec3D{1.35, 1.35, 1.35},
+    Matrix4x4::RotationX(-Consts::PI / 2.0),
+    Vec3D{0, 1.0, 0},
+    false,
+    false,
+    150.0
+};
 
 using namespace std;
 
@@ -50,8 +77,6 @@ void Shooter::initNetwork() {
 
     if (clientIp == sf::IpAddress::LocalHost) {
         server->start(serverPort);
-        if (server->isWorking())
-            server->generateBonuses();
     }
 
     client->connect(clientIp, clientPort);
@@ -74,7 +99,93 @@ void Shooter::start() {
 
     screen->setMouseCursorVisible(true);
 
-    world->loadMap(ShooterConsts::MAP_OBJ, Vec3D{5, 5, 5});
+    // Load config
+    Config mapCfg;
+    if (!mapCfg.load("map_config.cfg")) {
+        mapCfg.saveDefaults("map_config.cfg", {
+            {"mapPath", ShooterConsts::DOOM_MAP_OBJ},
+            {"scale", "1.35"},
+            {"spawnX", "0"},
+            {"spawnY", "1.0"},
+            {"spawnZ", "0"},
+            {"walkSpeed", "150"},
+            {"useTextures", "0"},
+            {"generateBonuses", "0"}
+        });
+        mapCfg.load("map_config.cfg");
+    }
+
+    std::string mapPath = mapCfg.get<std::string>("mapPath", ShooterConsts::DOOM_MAP_OBJ);
+    double scale = mapCfg.get<double>("scale", 1.35);
+    Vec3D configuredSpawn(mapCfg.get<double>("spawnX", 0), mapCfg.get<double>("spawnY", 1.0), mapCfg.get<double>("spawnZ", 0));
+    double walkSpeed = mapCfg.get<double>("walkSpeed", 150);
+    bool useTextures = mapCfg.get<int>("useTextures", 0) != 0;
+    bool genBonuses = mapCfg.get<int>("generateBonuses", 0) != 0;
+
+    world->loadMap(mapPath, Vec3D{scale, scale, scale}, Matrix4x4::RotationX(-Consts::PI / 2.0));
+
+    // Compute world AABB
+    Vec3D mapMin(1e9, 1e9, 1e9), mapMax(-1e9, -1e9, -1e9);
+    for (auto &it : *world) {
+        Matrix4x4 M = it.second->model();
+        for (auto &t : it.second->triangles()) {
+            for (int k = 0; k < 3; k++) {
+                Vec4D wv = M * t[k];
+                if (wv.x()<mapMin.x()) mapMin=Vec3D(wv.x(),mapMin.y(),mapMin.z());
+                if (wv.y()<mapMin.y()) mapMin=Vec3D(mapMin.x(),wv.y(),mapMin.z());
+                if (wv.z()<mapMin.z()) mapMin=Vec3D(mapMin.x(),mapMin.y(),wv.z());
+                if (wv.x()>mapMax.x()) mapMax=Vec3D(wv.x(),mapMax.y(),mapMax.z());
+                if (wv.y()>mapMax.y()) mapMax=Vec3D(mapMax.x(),wv.y(),mapMax.z());
+                if (wv.z()>mapMax.z()) mapMax=Vec3D(mapMax.x(),mapMax.y(),wv.z());
+            }
+        }
+    }
+
+    // Validate spawn against floor geometry
+    constexpr double margin = 100.0;
+    constexpr double playerFeetOffset = 0.5;
+    constexpr double spawnClearance = 0.05;
+    Vec3D validatedSpawn = configuredSpawn;
+
+    auto floorHit = world->rayCast(
+        Vec3D{configuredSpawn.x(), mapMax.y() + margin, configuredSpawn.z()},
+        Vec3D{configuredSpawn.x(), mapMin.y() - margin, configuredSpawn.z()},
+        "", true);
+
+    Log::log("=== SPAWN VALIDATION ===");
+    Log::log("  configured=(" + std::to_string(configuredSpawn.x()) + "," + std::to_string(configuredSpawn.y()) + "," + std::to_string(configuredSpawn.z()) + ")");
+
+    if (floorHit.intersected) {
+        validatedSpawn = Vec3D{
+            configuredSpawn.x(),
+            configuredSpawn.y(),  // use configured Y, not floor
+            configuredSpawn.z()
+        };
+        Log::log("  floorY=" + std::to_string(floorHit.pointOfIntersection.y()));
+        Log::log("  validated=(" + std::to_string(validatedSpawn.x()) + "," + std::to_string(validatedSpawn.y()) + "," + std::to_string(validatedSpawn.z()) + ")");
+        Log::log("  (using configured spawn Y, ignoring floor)");
+    } else {
+        Log::log("  ERROR: no floor under configured spawn X/Z");
+    }
+
+    playerController->setWalkSpeed(walkSpeed);
+
+    // When textures are disabled, assign visible fallback colors
+    if (!useTextures) {
+        for (auto &it : *world) {
+            if (!it.second->materials().empty()) {
+                it.second->setColor(sf::Color(160, 160, 160));
+            }
+        }
+    }
+
+    if (genBonuses && server->isWorking()) {
+        server->generateBonuses();
+    }
+
+    Log::log("=== MAP CONFIG ===");
+    Log::log("  mapPath=" + mapPath + " scale=" + std::to_string(scale) +
+             " walkSpeed=" + std::to_string(walkSpeed) + " useTextures=" + std::to_string(useTextures));
 
     // TODO: encapsulate call backs inside Player
     player->setAddTraceCallBack([this](const Vec3D &from, const Vec3D &to) {
@@ -91,8 +202,10 @@ void Shooter::start() {
 
     player->reInitWeapons();
 
-    player->translateToPoint(Vec3D{0, 10, 0});
+    player->translateToPoint(validatedSpawn);
     camera->translateToPoint(player->position() + Vec3D{0, 1.8, 0});
+    Log::log("PLAYER POS after spawn: " + std::to_string(player->position().x()) + " " +
+             std::to_string(player->position().y()) + " " + std::to_string(player->position().z()));
     player->attach(camera);
     world->addBody(player);
 
@@ -119,8 +232,9 @@ void Shooter::start() {
                            SoundController::loadAndPlay(SoundTag("click"), ShooterConsts::CLICK_SOUND);
                        }, "Server: " + client->serverIp().toString(), 5, 5, ShooterConsts::MAIN_MENU_GUI, {0, 66}, {0, 86}, {0, 46},
                        Consts::MEDIUM_FONT, {255, 255, 255});
-    mainMenu.addButton(screen->width() / 2, 350, 200, 20, [this]() {
-        this->player->translateToPoint(Vec3D{0, 10, 0});
+    Vec3D respawnPos = validatedSpawn;
+    mainMenu.addButton(screen->width() / 2, 350, 200, 20, [this, respawnPos]() {
+        this->player->translateToPoint(respawnPos);
         this->player->setVelocity({});
         this->play();
         SoundController::loadAndPlay(SoundTag("click"), ShooterConsts::CLICK_SOUND);
@@ -213,6 +327,18 @@ void Shooter::update() {
     if (inGame) {
         screen->setTitle(ShooterConsts::PROJECT_NAME);
 
+        { // Log player position every ~1 second
+            static double posLogTimer = 0;
+            posLogTimer += Time::deltaTime();
+            if (posLogTimer >= 1.0) {
+                posLogTimer = 0;
+                Log::log("PLAYER pos: " + std::to_string(player->position().x()) + " " +
+                         std::to_string(player->position().y()) + " " + std::to_string(player->position().z()) +
+                         " vel: " + std::to_string(player->velocity().x()) + " " +
+                         std::to_string(player->velocity().y()) + " " + std::to_string(player->velocity().z()));
+            }
+        }
+
         if (_debugRotate) {
             _debugRotateFrame++;
             if (_debugRotateFrame * 0.003 > 0.5236) {
@@ -279,6 +405,36 @@ void Shooter::update() {
             }
         } else {
             playerController->update();
+
+            // Floor clamping: one-sided raycast downward (only floors with normal pointing up)
+            Vec3D from = player->position();
+            Vec3D to = from - Vec3D{0, 500, 0};
+            auto hit = world->rayCast(from, to, "", true);
+            {
+                static int probeCount = 0;
+                if (probeCount < 10) {
+                    probeCount++;
+                    bool grounded = hit.intersected && (player->position().y() <= hit.pointOfIntersection.y() + 0.55);
+                    Log::log("GROUND PROBE: playerY=" + std::to_string(player->position().y()) +
+                             " floorY=" + (hit.intersected ? std::to_string(hit.pointOfIntersection.y()) : "N/A") +
+                             " velY=" + std::to_string(player->velocity().y()) +
+                             " grounded=" + (grounded ? "true" : "false"));
+                }
+            }
+            if (hit.intersected) {
+                double floorY = hit.pointOfIntersection.y();
+                if (player->position().y() < floorY + 0.5) {
+                    player->translateToPoint(Vec3D{player->position().x(), floorY + 0.5, player->position().z()});
+                    player->setVelocity(Vec3D{player->velocity().x(), 0, player->velocity().z()});
+                }
+            }
+
+            // Collision grid: slide along walls
+            Vec3D resolved = world->resolveCollision(player->position(), 1.0);
+            if ((resolved - player->position()).sqrAbs() > 0.0001) {
+                player->translateToPoint(resolved);
+                player->setVelocity(Vec3D{0, player->velocity().y(), 0});
+            }
         }
     } else {
         mainMenu.update();
@@ -367,6 +523,8 @@ void Shooter::play() {
     screen->setMouseCursorVisible(false);
     screen->renderWindow()->setMouseCursorGrabbed(true);
     sf::Vector2i _ignore = screen->getAndResetMouseDelta(); (void)_ignore;
+    Log::log("PLAY POS after play(): " + std::to_string(player->position().x()) + " " +
+             std::to_string(player->position().y()) + " " + std::to_string(player->position().z()));
 }
 
 void Shooter::spawnPlayer(sf::Uint16 id) {

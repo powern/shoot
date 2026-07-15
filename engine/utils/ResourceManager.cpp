@@ -1,14 +1,12 @@
-//
-// Created by Neirokan on 09.05.2020
-//
-
 #include <map>
 #include <memory>
 #include <sstream>
 #include <fstream>
+#include <filesystem>
 
 #include "ResourceManager.h"
 #include "Log.h"
+#include "../math/Vec2D.h"
 
 ResourceManager *ResourceManager::_instance = nullptr;
 
@@ -24,13 +22,11 @@ std::shared_ptr<sf::Texture> ResourceManager::loadTexture(const std::string &fil
         return nullptr;
     }
 
-    // If texture is already loaded - return pointer to it
     auto it = _instance->_textures.find(filename);
     if (it != _instance->_textures.end()) {
         return it->second;
     }
 
-    // Otherwise - try to load it. If failure - return zero
     std::shared_ptr<sf::Texture> texture(new sf::Texture);
     if (!texture->loadFromFile(filename)) {
         Log::log("ResourceManager::loadTexture: error with loading texture '" + filename + "'");
@@ -39,7 +35,6 @@ std::shared_ptr<sf::Texture> ResourceManager::loadTexture(const std::string &fil
 
     Log::log("ResourceManager::loadTexture: texture '" + filename + "' was loaded");
 
-    // If success - remember and return texture pointer
     texture->setRepeated(true);
     _instance->_textures.emplace(filename, texture);
 
@@ -51,13 +46,11 @@ std::shared_ptr<sf::SoundBuffer> ResourceManager::loadSoundBuffer(const std::str
         return nullptr;
     }
 
-    // If sound buffer is already loaded - return pointer to it
     auto it = _instance->_soundBuffers.find(filename);
     if (it != _instance->_soundBuffers.end()) {
         return it->second;
     }
 
-    // Otherwise - try to load it. If failure - return zero
     std::shared_ptr<sf::SoundBuffer> soundBuffer(new sf::SoundBuffer);
     if (!soundBuffer->loadFromFile(filename)) {
         Log::log("ResourceManager::loadSoundBuffer: error with loading sound buffer '" + filename + "'");
@@ -66,7 +59,6 @@ std::shared_ptr<sf::SoundBuffer> ResourceManager::loadSoundBuffer(const std::str
 
     Log::log("ResourceManager::loadSoundBuffer: sound buffer '" + filename + "' was loaded");
 
-    // If success - remember and return sound pointer
     _instance->_soundBuffers.emplace(filename, soundBuffer);
 
     return soundBuffer;
@@ -77,176 +69,338 @@ std::shared_ptr<sf::Font> ResourceManager::loadFont(const std::string &filename)
         return nullptr;
     }
 
-    // If font is already loaded - return pointer to it
     auto it = _instance->_fonts.find(filename);
     if (it != _instance->_fonts.end()) {
         return it->second;
     }
 
-    // Otherwise - try to load it. If failure - return zero
     std::shared_ptr<sf::Font> font(new sf::Font);
     if (!font->loadFromFile(filename)) {
-        Log::log("ResourceManager::loadFont: error with loading font: '" + filename + "'");
+        Log::log("ResourceManager::loadFont: error with loading font '" + filename + "'");
         return nullptr;
     }
 
     Log::log("ResourceManager::loadFont: font '" + filename + "' was loaded");
 
-    // If success - remember and return font pointer
     _instance->_fonts.emplace(filename, font);
 
     return font;
 }
 
-std::vector<std::shared_ptr<Mesh>> ResourceManager::loadObjects(const std::string &filename) {
-
-    std::vector<std::shared_ptr<Mesh>> objects{};
-    std::map<std::string, sf::Color> maters{};
-
-    if (_instance == nullptr) {
-        return objects;
-    }
-
-
-    // If objects is already loaded - return pointer to it
-    auto it = _instance->_objects.find(filename);
-    if (it != _instance->_objects.end()) {
-        return it->second;
-    }
+std::vector<Material> ResourceManager::loadMTL(const std::string &filename, const std::string &basePath) {
+    std::vector<Material> materials;
 
     std::ifstream file(filename);
     if (!file.is_open()) {
-        Log::log("Mesh::LoadObjects(): cannot load file from '" + filename + "'");
+        Log::log("ResourceManager::loadMTL: cannot open MTL file '" + filename + "'");
+        return materials;
+    }
+
+    Material current;
+    int lineNum = 0;
+    std::string line;
+
+    while (std::getline(file, line)) {
+        lineNum++;
+        std::stringstream s(line);
+        std::string cmd;
+        s >> cmd;
+
+        if (cmd == "newmtl") {
+            if (!current.name.empty()) {
+                materials.push_back(current);
+            }
+            current = Material();
+            s >> current.name;
+            while (!current.name.empty() && (current.name.back() == '\r')) {
+                current.name.pop_back();
+            }
+        } else if (cmd == "map_Kd") {
+            std::string texPath;
+            s >> texPath;
+            std::string fullPath = basePath + "/" + texPath;
+            current.texture = loadTexture(fullPath);
+            current.hasTexture = (current.texture != nullptr);
+        } else if (cmd == "Kd") {
+            float r, g, b;
+            s >> r >> g >> b;
+            current.color = sf::Color(
+                static_cast<sf::Uint8>(r * 255),
+                static_cast<sf::Uint8>(g * 255),
+                static_cast<sf::Uint8>(b * 255)
+            );
+        } else if (cmd == "d" || cmd == "Tr") {
+            float a;
+            s >> a;
+            current.alpha = a;
+        }
+    }
+
+    if (!current.name.empty()) {
+        materials.push_back(current);
+    }
+
+    Log::log("ResourceManager::loadMTL(): loaded " + std::to_string(materials.size()) + " materials from '" + filename + "'");
+    return materials;
+}
+
+std::vector<std::shared_ptr<Mesh>> ResourceManager::loadObjects(const std::string &filename) {
+    std::vector<std::shared_ptr<Mesh>> objects{};
+    std::map<std::string, sf::Color> maters{};
+    if (_instance == nullptr) { return objects; }
+
+    auto it = _instance->_objects.find(filename);
+    if (it != _instance->_objects.end()) { return it->second; }
+
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        Log::log("ResourceManager::loadObjects(): cannot load file from '" + filename + "'");
         return objects;
     }
 
-    std::vector<Vec4D> verts{};
-    std::vector<Triangle> tris{};
-    sf::Color currentColor = sf::Color(255, 245, 194, 255);
+    std::vector<Vec4D> verts;
+    std::vector<Vec2D> uvs;
+    std::vector<Vec3D> norms;
+    std::vector<Triangle> tris;
+    std::vector<Material> materials;
+    std::string currentMtlName;
+    int currentMtlIndex = -1;
+    sf::Color _currentFaceColor(255, 255, 255);
+    std::string basePath = std::filesystem::path(filename).parent_path().string();
 
-    while (!file.eof()) {
-        char line[128];
-        file.getline(line, 128);
+    // Load MTL if referenced
+    bool mtlLoaded = false;
 
-        std::stringstream s;
-        s << line;
+    std::string line;
+    int lineNum = 0;
 
-        char junk;
-        if (line[0] == 'o') {
-            if (!tris.empty())
-                objects.push_back(
-                        std::make_shared<Mesh>(ObjectNameTag(filename + "_temp_obj_" + std::to_string(objects.size())), tris));
-            tris.clear();
+    while (std::getline(file, line)) {
+        lineNum++;
+        std::stringstream s(line);
+        char first = 0;
+        // Get first non-whitespace character from line (not from stream, to preserve stream for parsing)
+        for (char c : line) {
+            if (c != ' ' && c != '\t' && c != '\r') {
+                first = c;
+                break;
+            }
         }
-        if (line[0] == 'v') {
-            double x, y, z;
-            s >> junk >> x >> y >> z;
-            verts.emplace_back(x, y, z, 1.0);
+
+        if (first == '#' || first == 0) {
+            continue;
         }
-        if (line[0] == 'g') {
-            std::string matInfo;
-            s >> junk >> matInfo;
-            std::string colorName = matInfo.substr(matInfo.size() - 3, 3);
-            currentColor = maters[matInfo.substr(matInfo.size() - 3, 3)];
-        }
-        if (line[0] == 'f') {
-            int f[3];
-            s >> junk >> f[0] >> f[1] >> f[2];
-            tris.emplace_back(verts[f[0] - 1], verts[f[1] - 1], verts[f[2] - 1], currentColor);
-        }
-        if (line[0] == 'm') {
-            int color[4];
+
+        if (first == 'm' && line.size() > 1 && line[1] == ' ') {
+            // Custom format: m ID R G B A
+            std::string skip; s >> skip; // consume 'm'
             std::string matName;
-
-            s >> junk >> matName >> color[0] >> color[1] >> color[2] >> color[3];
+            int color[4];
+            s >> matName >> color[0] >> color[1] >> color[2] >> color[3];
             maters.insert({matName, sf::Color(color[0], color[1], color[2], color[3])});
+            continue;
+        }
+
+        if (line.substr(0, 7) == "mtllib ") {
+            if (!mtlLoaded) {
+                std::string mtlName = line.substr(7);
+                // Remove trailing whitespace
+                while (!mtlName.empty() && (mtlName.back() == ' ' || mtlName.back() == '\r')) {
+                    mtlName.pop_back();
+                }
+                std::string mtlPath = basePath.empty() ? mtlName : basePath + "/" + mtlName;
+                materials = loadMTL(mtlPath, basePath);
+                mtlLoaded = true;
+            }
+            continue;
+        }
+
+        if (first == 'v') {
+            std::string skip; s >> skip; // consume 'v', 'vt', or 'vn'
+            if (line.size() > 1 && line[1] == 't') {
+                // Texture coordinate: vt u v
+                double u, v;
+                s >> u >> v;
+                uvs.emplace_back(u, v);
+            } else if (line.size() > 1 && line[1] == 'n') {
+                // Normal: vn x y z
+                double x, y, z;
+                s >> x >> y >> z;
+                norms.emplace_back(x, y, z);
+            } else {
+                // Vertex position: v x y z
+                double x, y, z;
+                s >> x >> y >> z;
+                verts.emplace_back(x, y, z, 1.0);
+            }
+            continue;
+        }
+
+        if (first == 'u') {
+            std::string cmd;
+            s >> cmd;
+            if (cmd == "usemtl") {
+                s >> currentMtlName;
+                while (!currentMtlName.empty() && (currentMtlName.back() == '\r')) {
+                    currentMtlName.pop_back();
+                }
+                currentMtlIndex = -1;
+                for (size_t mi = 0; mi < materials.size(); mi++) {
+                    if (materials[mi].name == currentMtlName) {
+                        currentMtlIndex = static_cast<int>(mi);
+                        break;
+                    }
+                }
+            }
+            continue;
+        }
+
+        if (first == 'f') {
+            // Face: f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3
+            std::string skip; s >> skip; // consume 'f'
+            std::vector<int> vIdx, vtIdx, vnIdx;
+            std::string part;
+
+            while (s >> part) {
+                std::stringstream ps(part);
+                std::string token;
+                int idx[3] = {0, 0, 0};
+                int ci = 0;
+
+                while (std::getline(ps, token, '/') && ci < 3) {
+                    if (!token.empty()) {
+                        idx[ci] = std::stoi(token);
+                    }
+                    ci++;
+                }
+
+                // Convert to 0-based
+                if (idx[0] > 0) idx[0]--;
+                else if (idx[0] < 0) idx[0] = static_cast<int>(verts.size()) + idx[0];
+
+                if (idx[1] > 0) idx[1]--;
+                else if (idx[1] < 0) idx[1] = static_cast<int>(uvs.size()) + idx[1];
+
+                if (idx[2] > 0) idx[2]--;
+                else if (idx[2] < 0) idx[2] = static_cast<int>(norms.size()) + idx[2];
+
+                vIdx.push_back(idx[0]);
+                vtIdx.push_back(idx[1]);
+                vnIdx.push_back(idx[2]);
+            }
+
+            // Triangulate: for convex polygons, use triangle fan
+            size_t n = vIdx.size();
+            if (n >= 3) {
+                sf::Color faceColor = _currentFaceColor;
+                if (currentMtlIndex >= 0 && currentMtlIndex < (int)materials.size()) {
+                    faceColor = materials[currentMtlIndex].color;
+                }
+
+                for (size_t fi = 1; fi < n - 1; fi++) {
+                    Vec4D p0 = (vIdx[0] >= 0 && vIdx[0] < (int)verts.size()) ? verts[vIdx[0]] : Vec4D(0,0,0,1);
+                    Vec4D p1 = (vIdx[fi] >= 0 && vIdx[fi] < (int)verts.size()) ? verts[vIdx[fi]] : Vec4D(0,0,0,1);
+                    Vec4D p2 = (vIdx[fi+1] >= 0 && vIdx[fi+1] < (int)verts.size()) ? verts[vIdx[fi+1]] : Vec4D(0,0,0,1);
+
+                    Vec2D uv0, uv1, uv2;
+                    if (vtIdx[0] >= 0 && vtIdx[0] < (int)uvs.size()) uv0 = uvs[vtIdx[0]];
+                    if (vtIdx[fi] >= 0 && vtIdx[fi] < (int)uvs.size()) uv1 = uvs[vtIdx[fi]];
+                    if (vtIdx[fi+1] >= 0 && vtIdx[fi+1] < (int)uvs.size()) uv2 = uvs[vtIdx[fi+1]];
+
+                    if (currentMtlIndex >= 0 && currentMtlIndex < (int)materials.size()) {
+                        tris.emplace_back(p0, p1, p2, uv0, uv1, uv2, currentMtlIndex, faceColor);
+                    } else {
+                        tris.emplace_back(p0, p1, p2, faceColor);
+                    }
+                }
+            }
+            continue;
+        }
+
+        if (first == 'o') {
+            // Object separator
+            if (!tris.empty()) {
+                auto mesh = std::make_shared<Mesh>(
+                    ObjectNameTag(filename + "_temp_obj_" + std::to_string(objects.size())), tris);
+                mesh->materials() = materials;
+                objects.push_back(mesh);
+                tris.clear();
+            }
+            continue;
+        }
+
+        if (first == 'g') {
+            // Group - old format: set current face color from maters
+            std::string skip; s >> skip; // consume 'g'
+            std::string matInfo;
+            s >> matInfo;
+            if (matInfo.size() >= 3) {
+                std::string colorKey = matInfo.substr(matInfo.size() - 3, 3);
+                auto matIt = maters.find(colorKey);
+                if (matIt != maters.end()) {
+                    _currentFaceColor = matIt->second;
+                }
+            }
+            currentMtlIndex = -1;
+            continue;
+        }
+
+        if (first == 's') {
+            // Smoothing group - ignore
+            continue;
         }
     }
 
     if (!tris.empty()) {
-        objects.push_back(
-                std::make_shared<Mesh>(ObjectNameTag(filename + "_temp_obj_" + std::to_string(objects.size())), tris));
+        auto mesh = std::make_shared<Mesh>(
+            ObjectNameTag(filename + "_temp_obj_" + std::to_string(objects.size())), tris);
+        mesh->materials() = materials;
+        objects.push_back(mesh);
     }
-    tris.clear();
 
     file.close();
-
-    Log::log("Mesh::LoadObjects(): obj '" + filename + "' was loaded");
-
-    // If success - remember and return vector of objects pointer
+    Log::log("ResourceManager::loadObjects(): obj '" + filename + "' was loaded (" +
+             std::to_string(verts.size()) + " verts, " +
+             std::to_string(uvs.size()) + " uvs, " +
+             std::to_string(norms.size()) + " norms, " +
+             std::to_string(tris.size()) + " tris, " +
+             std::to_string(materials.size()) + " mats)");
     _instance->_objects.emplace(filename, objects);
-
     return objects;
 }
 
+void ResourceManager::unloadObjects() {
+    if (_instance != nullptr) {
+        _instance->_objects.clear();
+    }
+}
+
 void ResourceManager::unloadTextures() {
-    if (_instance == nullptr) {
-        return;
+    if (_instance != nullptr) {
+        _instance->_textures.clear();
     }
-
-    int texturesCounter = _instance->_textures.size();
-    for (auto &_texture : _instance->_textures) {
-        _texture.second.reset();
-    }
-    _instance->_textures.clear();
-
-    Log::log("ResourceManager::unloadTextures(): all " + std::to_string(texturesCounter) + " textures was unloaded");
 }
 
 void ResourceManager::unloadSoundBuffers() {
-    if (_instance == nullptr) {
-        return;
+    if (_instance != nullptr) {
+        _instance->_soundBuffers.clear();
     }
-
-    int soundBuffersCounter = _instance->_soundBuffers.size();
-    for (auto &_soundBuffer : _instance->_soundBuffers) {
-        _soundBuffer.second.reset();
-    }
-    _instance->_soundBuffers.clear();
-
-    Log::log("ResourceManager::unloadSoundBuffers(): all " + std::to_string(soundBuffersCounter) +
-             " soundBuffers was unloaded");
 }
 
 void ResourceManager::unloadFonts() {
-    if (_instance == nullptr) {
-        return;
+    if (_instance != nullptr) {
+        _instance->_fonts.clear();
     }
-
-    int fontsCounter = _instance->_fonts.size();
-    for (auto &_font : _instance->_fonts) {
-        _font.second.reset();
-    }
-    _instance->_fonts.clear();
-
-    Log::log("ResourceManager::unloadFonts(): all " + std::to_string(fontsCounter) + " fonts was unloaded");
-}
-
-void ResourceManager::unloadObjects() {
-    if (_instance == nullptr) {
-        return;
-    }
-
-    int objCounter = _instance->_objects.size();
-    _instance->_objects.clear();
-
-    Log::log("ResourceManager::unloadObjects(): all " + std::to_string(objCounter) + " objects was unloaded");
 }
 
 void ResourceManager::unloadAllResources() {
+    unloadObjects();
     unloadTextures();
     unloadSoundBuffers();
     unloadFonts();
-    unloadObjects();
-
-    Log::log("ResourceManager::unloadAllResources(): all resources was unloaded");
+    Log::log("ResourceManager::unloadAllResources(): all resources were unloaded");
 }
 
 void ResourceManager::free() {
-    unloadAllResources();
-
     delete _instance;
     _instance = nullptr;
-
-    Log::log("ResourceManager::free(): pointer to 'ResourceManager' was freed");
 }

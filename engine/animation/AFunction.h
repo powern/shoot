@@ -1,7 +1,3 @@
-//
-// Created by Иван Ильин on 06.04.2021.
-//
-
 #ifndef ENGINE_AFUNCTION_H
 #define ENGINE_AFUNCTION_H
 

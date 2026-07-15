@@ -1,7 +1,3 @@
-//
-// Created by Neirokan on 30.04.2020
-//
-
 #ifndef ENGINE_SERVERUDP_H
 #define ENGINE_SERVERUDP_H
 
